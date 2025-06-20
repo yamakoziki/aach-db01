@@ -2,7 +2,7 @@
 
 ## 使用方法
 
-### 基本的な使用方法
+### 基本的な使用方法の説明
 ```bash
 python mountain_extractor.py data.csv "田中太郎"
 ```
