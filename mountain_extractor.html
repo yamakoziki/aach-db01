@@ -296,8 +296,8 @@
                 const membersText = record['メンバー'] || '';
                 // スペースで区切られたメンバー名を配列に分割
                 const membersList = membersText.split(/\s+/).filter(name => name.trim());
-                // 完全一致でメンバーを検索
-                return membersList.includes(memberName);
+                // 部分一致でメンバーを検索（柔軟性を保持）
+                return membersList.some(member => member.includes(memberName));
             });
         }
         
