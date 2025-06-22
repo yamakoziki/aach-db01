@@ -570,14 +570,14 @@ ${keywordEntries}`;
                 .map(([status, count]) => `${status}: ${count}回`)
                 .join('\n');
             
-            const stayRate = ((weatherCount['停滞あり'] || 0) / allRecords.length * 100).toFixed(1);
+            const stayRate = ((weatherCount['停滞あり'] || 0) / extractedRecords.length * 100).toFixed(1);
             
             return `■ 気象・停滞要因分析
 
 停滞状況:
 ${weatherEntries}
 
-停滞率: ${stayRate}%`;
+停滞率: ${stayRate}% (抽出されたメンバーの記録における停滞発生率)`;
         }
         
         function analyzeEquipmentInnovation() {
