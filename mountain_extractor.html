@@ -435,9 +435,7 @@
 季節別登山回数:
 ${seasonEntries}
 
-■ 分析結果:
-最も多い登山シーズンは「${maxSeason[0]}」で${maxSeason[1]}回の記録があります。
-積雪期の登山が多いことから、スキー登山が主要な活動だったことが分かります。`;
+最多シーズン: ${maxSeason[0]} (${maxSeason[1]}回)`;
         }
         
         function analyzeAreaActivity() {
@@ -461,9 +459,7 @@ ${seasonEntries}
 山域別登山回数 (上位10位):
 ${areaEntries}
 
-■ 分析結果:
-最も活動が多い山域は「${topArea[0]}」で${topArea[1]}回の記録があります。
-${memberName}の活動範囲と地域的な登山傾向が分析できます。`;
+最多活動山域: ${topArea[0]} (${topArea[1]}回)`;
         }
         
         function analyzeMemberParticipation() {
@@ -493,7 +489,7 @@ ${memberName}の活動範囲と地域的な登山傾向が分析できます。`
             const totalTrips = extractedRecords.length;
             
             const topCompanionInfo = companionEntries.length > 0 
-                ? `最も頻繁な同行者は「${companionEntries[0][0]}」で${companionEntries[0][1]}回同行しています。\n${memberName}のチームワークと人間関係が登山活動に反映されています。`
+                ? `\n最多同行者: ${companionEntries[0][0]} (${companionEntries[0][1]}回)`
                 : '';
             
             return `■ ${memberName}の同行メンバー分析
@@ -501,11 +497,9 @@ ${memberName}の活動範囲と地域的な登山傾向が分析できます。`
 ${memberName}とよく一緒に登山したメンバー (上位15位):
 ${companionList}
 
-■ 分析結果:
-${memberName}の総登山回数: ${totalTrips}回
+総登山回数: ${totalTrips}回
 同行メンバー総数: ${totalCompanions}名
-3回以上同行の頻繁メンバー: ${frequentCompanions}名
-${topCompanionInfo}`;
+3回以上同行メンバー: ${frequentCompanions}名${topCompanionInfo}`;
         }
         
         function analyzeTimeline() {
@@ -529,10 +523,7 @@ ${topCompanionInfo}`;
 年代別活動回数:
 ${yearEntries}
 
-■ 分析結果:
-活動期間: ${startYear} ～ ${endYear}
-明治末期から大正時代にかけての日本登山史の黎明期の貴重な記録です。
-スキー登山の普及と技術発展の歴史が記録されています。`;
+活動期間: ${startYear} ～ ${endYear}`;
         }
         
         function analyzeRouteFeatures() {
@@ -561,11 +552,7 @@ ${yearEntries}
             return `■ ルート・技術的特徴分析
 
 技術的特徴キーワード出現回数:
-${keywordEntries}
-
-■ 分析結果:
-スキー登山が主要な活動形態であり、多くの山で初登山・初登頂を達成。
-教育的な合宿や講習会も重視されており、技術継承に力を入れていたことが分かります。`;
+${keywordEntries}`;
         }
         
         function analyzeWeatherFactors() {
@@ -590,10 +577,7 @@ ${keywordEntries}
 停滞状況:
 ${weatherEntries}
 
-■ 分析結果:
-停滞率: ${stayRate}%
-当時の気象予報技術の限界と、冬季登山の困難さを物語っています。
-安全性を重視し、無理のない登山計画を立てていたことが推測されます。`;
+停滞率: ${stayRate}%`;
         }
         
         function analyzeEquipmentInnovation() {
@@ -622,12 +606,7 @@ ${weatherEntries}
             return `■ 装備・技術革新分析
 
 装備・技術要素出現回数:
-${equipmentEntries}
-
-■ 分析結果:
-スキー技術の導入と普及が主要な技術革新でした。
-馬橇利用や温泉・山小屋の活用など、当時のインフラを有効活用。
-測候所への訪問記録は、科学的な登山アプローチの表れです。`;
+${equipmentEntries}`;
         }
         
         function analyzeSafetyManagement() {
@@ -656,12 +635,7 @@ ${equipmentEntries}
             return `■ 安全管理・リスク分析
 
 安全管理要素出現回数:
-${safetyEntries}
-
-■ 分析結果:
-無理をせず引き返す判断力と、教育重視の安全管理が実践されていました。
-合宿や講習会による技術向上と安全意識の共有が組織的に行われています。
-創立期から安全第一の登山文化が確立されていたことが分かります。`;
+${safetyEntries}`;
         }
     </script>
 </body>
