@@ -23,7 +23,8 @@ def extract_member_records(csv_file: str, member_name: str, output_file: str = N
             reader = csv.DictReader(file)
             
             for row in reader:
-                if member_name in row.get('メンバー', ''):
+                members = row.get('メンバー', '').split()
+                if member_name in members:
                     extracted_records.append(row)
     
     except FileNotFoundError:
