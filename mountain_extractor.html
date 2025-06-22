@@ -559,7 +559,10 @@ ${keywordEntries}`;
             const weatherCount = {};
             extractedRecords.forEach(record => {
                 const stay = record['停滞'] || '';
-                if (stay.trim()) {
+                const stayValue = stay.trim();
+                
+                // 1以上の数値が停滞、0や空白は停滞なし
+                if (stayValue && !isNaN(stayValue) && parseInt(stayValue) >= 1) {
                     weatherCount['停滞あり'] = (weatherCount['停滞あり'] || 0) + 1;
                 } else {
                     weatherCount['停滞なし'] = (weatherCount['停滞なし'] || 0) + 1;
@@ -577,7 +580,7 @@ ${keywordEntries}`;
 停滞状況:
 ${weatherEntries}
 
-停滞率: ${stayRate}% (抽出されたメンバーの記録における停滞発生率)`;
+停滞率: ${stayRate}% (停滞日数 1日以上の記録の発生率)`;
         }
         
         function analyzeEquipmentInnovation() {
