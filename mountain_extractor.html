@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>登山データ抽出ツール</title>
+    <title>AACH登山データ抽出アプリ</title>
     <style>
         body {
             font-family: 'Hiragino Sans', 'Meiryo', sans-serif;
@@ -31,6 +31,12 @@
             margin-bottom: 5px;
             font-weight: bold;
             color: #34495e;
+        }
+        .help-text {
+            font-size: 12px;
+            color: #7f8c8d;
+            margin-bottom: 8px;
+            font-style: italic;
         }
         input[type="file"], input[type="text"] {
             width: 100%;
@@ -118,12 +124,6 @@
         .analysis-btn:hover {
             background-color: #8e44ad;
         }
-        .download-all-btn {
-            background-color: #e67e22;
-        }
-        .download-all-btn:hover {
-            background-color: #d35400;
-        }
         #analysisResults {
             background-color: #f8f9fa;
             border: 1px solid #dee2e6;
@@ -139,30 +139,41 @@
 </head>
 <body>
     <div class="container">
-        <h1>登山データ抽出ツール</h1>
+        <h1>AACH登山データ抽出アプリ</h1>
         
         <div class="form-group">
-            <label for="csvFile">CSVファイルを選択:</label>
+            <label for="csvFile">1. CSVファイルを選択:</label>
+            <div class="help-text">ドラッグ&ドロップ可能、UTF-8エンコーディング推奨</div>
             <input type="file" id="csvFile" accept=".csv" />
         </div>
         
         <div class="form-group">
-            <label for="memberName">メンバー名:</label>
+            <label for="memberName">2. メンバー名記入:</label>
+            <div class="help-text">CSVファイル内の「メンバー」列に記載された名称を使用</div>
             <input type="text" id="memberName" placeholder="例: 田中太郎" />
         </div>
         
-        <button onclick="extractRecords()">データ抽出</button>
-        <button id="downloadBtn" class="download-btn" onclick="downloadCSV()" disabled>CSVダウンロード</button>
-        <button id="downloadAllBtn" class="download-all-btn" onclick="downloadAllData()" disabled>全データダウンロード</button>
+        <div class="form-group">
+            <label>3. データ抽出:</label>
+            <div class="help-text">指定メンバーが参加した登山記録を抽出表示</div>
+            <button onclick="extractRecords()">データ抽出</button>
+        </div>
+        
+        <div class="form-group">
+            <label>4. CSVダウンロード:</label>
+            <div class="help-text">抽出されたデータをCSVファイルでダウンロード</div>
+            <button id="downloadBtn" class="download-btn" onclick="downloadCSV()" disabled>CSVダウンロード</button>
+        </div>
         
         <div id="message"></div>
         <div id="results"></div>
         
         <div class="analysis-section">
-            <h2>Claudeによる山行分析</h2>
+            <h2>データ分析機能</h2>
             
             <div class="form-group">
-                <label for="analysisTheme">分析テーマを選択:</label>
+                <label for="analysisTheme">5. 分析テーマを選択:</label>
+                <div class="help-text">抽出されたデータから様々な観点で統計分析を実行</div>
                 <select id="analysisTheme">
                     <option value="">-- 分析テーマを選択してください --</option>
                     <option value="seasonal">季節別登山傾向分析</option>
@@ -176,7 +187,11 @@
                 </select>
             </div>
             
-            <button id="analysisBtn" class="analysis-btn" onclick="executeAnalysis()" disabled>分析実行</button>
+            <div class="form-group">
+                <label>6. 分析実行:</label>
+                <div class="help-text">選択したテーマに基づいて詳細な分析結果を表示</div>
+                <button id="analysisBtn" class="analysis-btn" onclick="executeAnalysis()" disabled>分析実行</button>
+            </div>
             
             <div id="analysisResults"></div>
         </div>
@@ -219,8 +234,6 @@
                     const downloadBtn = document.getElementById('downloadBtn');
                     downloadBtn.disabled = extractedRecords.length === 0;
                     
-                    const downloadAllBtn = document.getElementById('downloadAllBtn');
-                    downloadAllBtn.disabled = allRecords.length === 0;
                     
                     const analysisBtn = document.getElementById('analysisBtn');
                     analysisBtn.disabled = allRecords.length === 0;
@@ -351,37 +364,6 @@
             showMessage(`${filename}をダウンロードしました。`);
         }
         
-        function downloadAllData() {
-            if (allRecords.length === 0) {
-                showMessage('ダウンロードするデータがありません。', 'error');
-                return;
-            }
-            
-            const outputColumns = ['年度', '暦年', '開始日', '終了日', '行動', '停滞', 'メンバー', '山域', 'シーズン', 'ルート・特記事項', '出典'];
-            
-            let csvContent = outputColumns.join(',') + '\n';
-            
-            extractedRecords.forEach(record => {
-                const row = outputColumns.map(col => {
-                    const value = record[col] || '';
-                    return value.includes(',') ? `"${value}"` : value;
-                });
-                csvContent += row.join(',') + '\n';
-            });
-            
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement('a');
-            const filename = '全登山記録.csv';
-            
-            link.href = URL.createObjectURL(blob);
-            link.download = filename;
-            link.style.display = 'none';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            
-            showMessage(`${filename}をダウンロードしました。`);
-        }
         
         function executeAnalysis() {
             const theme = document.getElementById('analysisTheme').value;
@@ -441,20 +423,21 @@
                 seasonCount[season] = (seasonCount[season] || 0) + 1;
             });
             
-            let result = '■ 季節別登山傾向分析\n\n';
-            result += '季節別登山回数:\n';
-            Object.entries(seasonCount)
+            const seasonEntries = Object.entries(seasonCount)
                 .sort((a, b) => b[1] - a[1])
-                .forEach(([season, count]) => {
-                    result += `${season}: ${count}回\n`;
-                });
+                .map(([season, count]) => `${season}: ${count}回`)
+                .join('\n');
             
-            result += '\n■ 分析結果:\n';
             const maxSeason = Object.entries(seasonCount).reduce((a, b) => a[1] > b[1] ? a : b);
-            result += `最も多い登山シーズンは「${maxSeason[0]}」で${maxSeason[1]}回の記録があります。\n`;
-            result += '積雪期の登山が多いことから、スキー登山が主要な活動だったことが分かります。';
             
-            return result;
+            return `■ 季節別登山傾向分析
+
+季節別登山回数:
+${seasonEntries}
+
+■ 分析結果:
+最も多い登山シーズンは「${maxSeason[0]}」で${maxSeason[1]}回の記録があります。
+積雪期の登山が多いことから、スキー登山が主要な活動だったことが分かります。`;
         }
         
         function analyzeAreaActivity() {
@@ -464,21 +447,23 @@
                 areaCount[area] = (areaCount[area] || 0) + 1;
             });
             
-            let result = '■ 山域別活動分析\n\n';
-            result += '山域別登山回数 (上位10位):\n';
-            Object.entries(areaCount)
+            const areaEntries = Object.entries(areaCount)
                 .sort((a, b) => b[1] - a[1])
                 .slice(0, 10)
-                .forEach(([area, count], index) => {
-                    result += `${index + 1}. ${area}: ${count}回\n`;
-                });
+                .map(([area, count], index) => `${index + 1}. ${area}: ${count}回`)
+                .join('\n');
             
-            result += '\n■ 分析結果:\n';
             const topArea = Object.entries(areaCount).reduce((a, b) => a[1] > b[1] ? a : b);
-            result += `最も活動が多い山域は「${topArea[0]}」で${topArea[1]}回の記録があります。\n`;
-            result += `${memberName}の活動範囲と地域的な登山傾向が分析できます。`;
+            const memberName = document.getElementById('memberName').value.trim();
             
-            return result;
+            return `■ 山域別活動分析
+
+山域別登山回数 (上位10位):
+${areaEntries}
+
+■ 分析結果:
+最も活動が多い山域は「${topArea[0]}」で${topArea[1]}回の記録があります。
+${memberName}の活動範囲と地域的な登山傾向が分析できます。`;
         }
         
         function analyzeMemberParticipation() {
@@ -489,44 +474,38 @@
                 const members = record['メンバー'] || '';
                 const membersList = members.split(',').map(name => name.trim());
                 membersList.forEach(member => {
-                    // 検索対象のメンバーを除外して同行者のみをカウント
                     if (member && member !== '不詳' && !member.includes(memberName)) {
                         memberCount[member] = (memberCount[member] || 0) + 1;
                     }
                 });
             });
             
-            let result = `■ ${memberName}の同行メンバー分析\n\n`;
-            result += `${memberName}とよく一緒に登山したメンバー (上位15位):\n`;
-            
             const companionEntries = Object.entries(memberCount)
                 .sort((a, b) => b[1] - a[1])
                 .slice(0, 15);
-                
-            if (companionEntries.length === 0) {
-                result += '同行メンバーの記録が見つかりませんでした。\n';
-            } else {
-                companionEntries.forEach(([member, count], index) => {
-                    result += `${index + 1}. ${member}: ${count}回同行\n`;
-                });
-            }
             
-            result += '\n■ 分析結果:\n';
+            const companionList = companionEntries.length === 0 
+                ? '同行メンバーの記録が見つかりませんでした。'
+                : companionEntries.map(([member, count], index) => `${index + 1}. ${member}: ${count}回同行`).join('\n');
+            
             const totalCompanions = Object.keys(memberCount).length;
             const frequentCompanions = Object.values(memberCount).filter(count => count >= 3).length;
             const totalTrips = extractedRecords.length;
             
-            result += `${memberName}の総登山回数: ${totalTrips}回\n`;
-            result += `同行メンバー総数: ${totalCompanions}名\n`;
-            result += `3回以上同行の頻繁メンバー: ${frequentCompanions}名\n`;
+            const topCompanionInfo = companionEntries.length > 0 
+                ? `最も頻繁な同行者は「${companionEntries[0][0]}」で${companionEntries[0][1]}回同行しています。\n${memberName}のチームワークと人間関係が登山活動に反映されています。`
+                : '';
             
-            if (companionEntries.length > 0) {
-                const topCompanion = companionEntries[0];
-                result += `最も頻繁な同行者は「${topCompanion[0]}」で${topCompanion[1]}回同行しています。\n`;
-                result += `${memberName}のチームワークと人間関係が登山活動に反映されています。`;
-            }
-            
-            return result;
+            return `■ ${memberName}の同行メンバー分析
+
+${memberName}とよく一緒に登山したメンバー (上位15位):
+${companionList}
+
+■ 分析結果:
+${memberName}の総登山回数: ${totalTrips}回
+同行メンバー総数: ${totalCompanions}名
+3回以上同行の頻繁メンバー: ${frequentCompanions}名
+${topCompanionInfo}`;
         }
         
         function analyzeTimeline() {
@@ -536,28 +515,27 @@
                 yearCount[year] = (yearCount[year] || 0) + 1;
             });
             
-            let result = '■ 時代別登山史分析\n\n';
-            result += '年代別活動回数:\n';
-            Object.entries(yearCount)
+            const yearEntries = Object.entries(yearCount)
                 .sort((a, b) => a[0].localeCompare(b[0]))
-                .forEach(([year, count]) => {
-                    result += `${year}: ${count}回\n`;
-                });
+                .map(([year, count]) => `${year}: ${count}回`)
+                .join('\n');
             
-            result += '\n■ 分析結果:\n';
             const years = Object.keys(yearCount).sort();
             const startYear = years[0];
             const endYear = years[years.length - 1];
-            result += `活動期間: ${startYear} ～ ${endYear}\n`;
-            result += '明治末期から大正時代にかけての日本登山史の黎明期の貴重な記録です。\n';
-            result += 'スキー登山の普及と技術発展の歴史が記録されています。';
             
-            return result;
+            return `■ 時代別登山史分析
+
+年代別活動回数:
+${yearEntries}
+
+■ 分析結果:
+活動期間: ${startYear} ～ ${endYear}
+明治末期から大正時代にかけての日本登山史の黎明期の貴重な記録です。
+スキー登山の普及と技術発展の歴史が記録されています。`;
         }
         
         function analyzeRouteFeatures() {
-            let result = '■ ルート・技術的特徴分析\n\n';
-            
             const routeKeywords = {
                 'スキー': 0,
                 '初登山': 0,
@@ -575,18 +553,19 @@
                 });
             });
             
-            result += '技術的特徴キーワード出現回数:\n';
-            Object.entries(routeKeywords)
+            const keywordEntries = Object.entries(routeKeywords)
                 .sort((a, b) => b[1] - a[1])
-                .forEach(([keyword, count]) => {
-                    result += `${keyword}: ${count}回\n`;
-                });
+                .map(([keyword, count]) => `${keyword}: ${count}回`)
+                .join('\n');
             
-            result += '\n■ 分析結果:\n';
-            result += 'スキー登山が主要な活動形態であり、多くの山で初登山・初登頂を達成。\n';
-            result += '教育的な合宿や講習会も重視されており、技術継承に力を入れていたことが分かります。';
-            
-            return result;
+            return `■ ルート・技術的特徴分析
+
+技術的特徴キーワード出現回数:
+${keywordEntries}
+
+■ 分析結果:
+スキー登山が主要な活動形態であり、多くの山で初登山・初登頂を達成。
+教育的な合宿や講習会も重視されており、技術継承に力を入れていたことが分かります。`;
         }
         
         function analyzeWeatherFactors() {
@@ -600,25 +579,24 @@
                 }
             });
             
-            let result = '■ 気象・停滞要因分析\n\n';
-            result += '停滞状況:\n';
-            Object.entries(weatherCount).forEach(([status, count]) => {
-                result += `${status}: ${count}回\n`;
-            });
+            const weatherEntries = Object.entries(weatherCount)
+                .map(([status, count]) => `${status}: ${count}回`)
+                .join('\n');
             
             const stayRate = ((weatherCount['停滞あり'] || 0) / allRecords.length * 100).toFixed(1);
             
-            result += '\n■ 分析結果:\n';
-            result += `停滞率: ${stayRate}%\n`;
-            result += '当時の気象予報技術の限界と、冬季登山の困難さを物語っています。\n';
-            result += '安全性を重視し、無理のない登山計画を立てていたことが推測されます。';
-            
-            return result;
+            return `■ 気象・停滞要因分析
+
+停滞状況:
+${weatherEntries}
+
+■ 分析結果:
+停滞率: ${stayRate}%
+当時の気象予報技術の限界と、冬季登山の困難さを物語っています。
+安全性を重視し、無理のない登山計画を立てていたことが推測されます。`;
         }
         
         function analyzeEquipmentInnovation() {
-            let result = '■ 装備・技術革新分析\n\n';
-            
             const equipmentKeywords = {
                 'スキー': 0,
                 '馬橇': 0,
@@ -636,24 +614,23 @@
                 });
             });
             
-            result += '装備・技術要素出現回数:\n';
-            Object.entries(equipmentKeywords)
+            const equipmentEntries = Object.entries(equipmentKeywords)
                 .sort((a, b) => b[1] - a[1])
-                .forEach(([keyword, count]) => {
-                    result += `${keyword}: ${count}回\n`;
-                });
+                .map(([keyword, count]) => `${keyword}: ${count}回`)
+                .join('\n');
             
-            result += '\n■ 分析結果:\n';
-            result += 'スキー技術の導入と普及が主要な技術革新でした。\n';
-            result += '馬橇利用や温泉・山小屋の活用など、当時のインフラを有効活用。\n';
-            result += '測候所への訪問記録は、科学的な登山アプローチの表れです。';
-            
-            return result;
+            return `■ 装備・技術革新分析
+
+装備・技術要素出現回数:
+${equipmentEntries}
+
+■ 分析結果:
+スキー技術の導入と普及が主要な技術革新でした。
+馬橇利用や温泉・山小屋の活用など、当時のインフラを有効活用。
+測候所への訪問記録は、科学的な登山アプローチの表れです。`;
         }
         
         function analyzeSafetyManagement() {
-            let result = '■ 安全管理・リスク分析\n\n';
-            
             const safetyKeywords = {
                 '引き返し': 0,
                 '中止': 0,
@@ -671,19 +648,20 @@
                 });
             });
             
-            result += '安全管理要素出現回数:\n';
-            Object.entries(safetyKeywords)
+            const safetyEntries = Object.entries(safetyKeywords)
                 .sort((a, b) => b[1] - a[1])
-                .forEach(([keyword, count]) => {
-                    result += `${keyword}: ${count}回\n`;
-                });
+                .map(([keyword, count]) => `${keyword}: ${count}回`)
+                .join('\n');
             
-            result += '\n■ 分析結果:\n';
-            result += '無理をせず引き返す判断力と、教育重視の安全管理が実践されていました。\n';
-            result += '合宿や講習会による技術向上と安全意識の共有が組織的に行われています。\n';
-            result += '創立期から安全第一の登山文化が確立されていたことが分かります。';
-            
-            return result;
+            return `■ 安全管理・リスク分析
+
+安全管理要素出現回数:
+${safetyEntries}
+
+■ 分析結果:
+無理をせず引き返す判断力と、教育重視の安全管理が実践されていました。
+合宿や講習会による技術向上と安全意識の共有が組織的に行われています。
+創立期から安全第一の登山文化が確立されていたことが分かります。`;
         }
     </script>
 </body>
