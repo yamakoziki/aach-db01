@@ -294,10 +294,10 @@
         function filterRecords(records, memberName) {
             return records.filter(record => {
                 const membersText = record['メンバー'] || '';
-                // カンマで区切られたメンバー名を配列に分割
-                const membersList = membersText.split(',').map(name => name.trim());
-                // 部分一致でメンバーを検索
-                return membersList.some(member => member.includes(memberName));
+                // スペースで区切られたメンバー名を配列に分割
+                const membersList = membersText.split(/\s+/).filter(name => name.trim());
+                // 完全一致でメンバーを検索
+                return membersList.includes(memberName);
             });
         }
         
@@ -468,9 +468,9 @@ ${areaEntries}
             
             extractedRecords.forEach(record => {
                 const members = record['メンバー'] || '';
-                const membersList = members.split(',').map(name => name.trim());
+                const membersList = members.split(/\s+/).filter(name => name.trim());
                 membersList.forEach(member => {
-                    if (member && member !== '不詳' && !member.includes(memberName)) {
+                    if (member && member !== '不詳' && member !== memberName) {
                         memberCount[member] = (memberCount[member] || 0) + 1;
                     }
                 });
