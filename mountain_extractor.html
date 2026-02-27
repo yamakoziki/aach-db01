@@ -304,9 +304,9 @@
             <div class="filter-row">
                 <div class="form-group">
                     <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <label>山域（複数選択不可）</label>
+                        <label>山域</label>
                         <div>
-                            <button class="select-all-btn" onclick="clearSelect('areaSelect')">解除</button>
+                            <button class="select-all-btn" onclick="selectDefaultArea()">解除</button>
                         </div>
                     </div>
                     <select id="areaSelect"></select>
@@ -315,10 +315,9 @@
                     <div style="display:flex; justify-content:space-between; align-items:center;">
                         <label>シーズン</label>
                         <div>
-                            <button class="select-all-btn" onclick="clearSelect('seasonSelect')">解除</button>
+                            <button class="select-all-btn" onclick="selectDefaultSeason()">解除</button>
                         </div>
                     </div>
-                    <div class="help-text">無選択は全期間</div>
                     <select id="seasonSelect"></select>
                 </div>
             </div>
@@ -438,11 +437,22 @@
     }
 
     // ===== ドロップダウン生成 =====
+    const AREA_ORDER = [
+        '日高山脈','大雪山','十勝連峰','十勝連峰、大雪山',
+        '積丹、ニセコ、羊蹄山','芦別、夕張','増毛、樺戸','道北、利尻',
+        '道南','道東、知床','札幌近郊','道外','千島','樺太','海外'
+    ];
+
     function populateDropdowns() {
-        const areas = [...new Set(allRecords.map(r => r['山域'] || '').filter(v => v))].sort();
-        const seasons = [...new Set(allRecords.map(r => r['シーズン'] || '').filter(v => v))].sort();
-        fillSelect('areaSelect', areas);
-        fillSelect('seasonSelect', seasons);
+        const dataAreas = new Set(allRecords.map(r => r['山域'] || '').filter(v => v));
+        const ordered = AREA_ORDER.filter(a => dataAreas.has(a));
+        const remaining = [...dataAreas].filter(a => !AREA_ORDER.includes(a)).sort();
+        fillSelect('areaSelect', ['全山域', ...ordered, ...remaining]);
+        document.getElementById('areaSelect').value = '全山域';
+
+        const dataSeasons = [...new Set(allRecords.map(r => r['シーズン'] || '').filter(v => v))].sort();
+        fillSelect('seasonSelect', ['全期間', ...dataSeasons]);
+        document.getElementById('seasonSelect').value = '全期間';
     }
 
     function fillSelect(id, values) {
@@ -460,9 +470,17 @@
         for (const opt of sel.options) opt.selected = false;
     }
 
+    function selectDefaultArea() {
+        document.getElementById('areaSelect').value = '全山域';
+    }
+
+    function selectDefaultSeason() {
+        document.getElementById('seasonSelect').value = '全期間';
+    }
+
     function resetApp2Filters() {
-        clearSelect('areaSelect');
-        clearSelect('seasonSelect');
+        selectDefaultArea();
+        selectDefaultSeason();
         ['route1','route2','route3','route4','route5'].forEach(id => {
             document.getElementById(id).value = '';
         });
@@ -494,13 +512,13 @@
 
     // ===== App2: 条件抽出 =====
     function extractByCondition() {
-        const selAreas = getSelected('areaSelect');
-        const selSeasons = getSelected('seasonSelect');
+        const selArea = document.getElementById('areaSelect').value;
+        const selSeason = document.getElementById('seasonSelect').value;
         const routeKws = ['route1','route2','route3','route4','route5']
             .map(id => document.getElementById(id).value.trim()).filter(Boolean);
 
-        const hasAreaFilter = selAreas.length > 0;
-        const hasSeasonFilter = selSeasons.length > 0;
+        const hasAreaFilter = selArea && selArea !== '全山域';
+        const hasSeasonFilter = selSeason && selSeason !== '全期間';
         const hasRouteFilter = routeKws.length > 0;
 
         if (!hasAreaFilter && !hasSeasonFilter && !hasRouteFilter) {
@@ -509,8 +527,8 @@
         }
 
         conditionRecords = allRecords.filter(r => {
-            if (hasAreaFilter && !selAreas.includes(r['山域'] || '')) return false;
-            if (hasSeasonFilter && !selSeasons.includes(r['シーズン'] || '')) return false;
+            if (hasAreaFilter && selArea !== (r['山域'] || '')) return false;
+            if (hasSeasonFilter && selSeason !== (r['シーズン'] || '')) return false;
             if (hasRouteFilter) {
                 const route = (r['ルート・特記事項'] || '') + ' ' + (r['山域'] || '');
                 if (!routeKws.every(kw => route.includes(kw))) return false;
@@ -518,7 +536,9 @@
             return true;
         });
 
-        displayResults(conditionRecords, 'app2', buildConditionLabel(selAreas, selSeasons, routeKws));
+        const labelAreas = hasAreaFilter ? [selArea] : [];
+        const labelSeasons = hasSeasonFilter ? [selSeason] : [];
+        displayResults(conditionRecords, 'app2', buildConditionLabel(labelAreas, labelSeasons, routeKws));
         document.getElementById('app2-download-btn').disabled = conditionRecords.length === 0;
         if (conditionRecords.length > 0) {
             document.getElementById('app2-analysis-section').classList.remove('hidden');

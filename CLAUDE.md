@@ -22,7 +22,7 @@ python mountain_extractor.py personal DATA.csv "田中太郎"
 # Extract + save to CSV + show analysis
 python mountain_extractor.py personal DATA.csv "田中太郎" -o out.csv --analyze
 
-# Extract by mountain area, season, or route keyword (OR logic for keywords)
+# Extract by mountain area, season, or route keyword (AND logic for keywords)
 python mountain_extractor.py condition DATA.csv -a 北アルプス -s 夏 -r 縦走 スキー -o out.csv --analyze
 ```
 
@@ -49,3 +49,25 @@ The `メンバー` column uses space-separated tokens, each optionally prefixed 
 `OUTPUT_COLUMNS = ['年度', '暦年', '開始日', '終了日', '行動', '停滞', 'メンバー', '山域', 'シーズン', 'ルート・特記事項', '出典']`
 
 The input CSV has additional columns (`リンク`, `種別`) that are excluded from output.
+
+### `mountain_extractor.html`
+
+A self-contained single-file app — open directly in a browser, no server needed. Key architecture points:
+
+- **CSV loading**: uses `FileReader.readAsText(file, 'utf-8')` — only UTF-8 is supported (unlike the Python tool's multi-encoding fallback). The BOM-prepended output from `save_csv()` is compatible.
+- **State**: three module-level arrays — `allRecords`, `personalRecords`, `conditionRecords` — hold all data in memory.
+- **App flow**: Step 1 loads CSV → Step 2 selects app mode (個人抽出 or 条件抽出) → results + analysis shown inline.
+- **Results display**: capped at 100 rows on screen; full results exported via CSV download (BOM-prepended UTF-8, same column set as `OUTPUT_COLUMNS`).
+- **Area/Season selects**: single-selection `<select>` dropdowns populated from the loaded data; no `multiple` attribute (unlike CLI's `-a`/`-s` which accept multiple values).
+- **Route keyword search**: up to 5 keyword inputs, AND logic (`every(kw => route.includes(kw))`), matching the CLI `condition` subcommand.
+- **Analysis**: rendered as inline HTML bar charts via `buildBarAnalysis()` and helper functions — mirrors the CLI `analyze()` themes but without the ASCII bar-chart style.
+- **`normalizeName()`** in JS and **`normalize_name()`** in Python are equivalent — both strip `Role:` prefixes and `（suffix）` parentheticals.
+
+### CLI/HTML behavioral differences
+
+| Behavior | CLI (`mountain_extractor.py`) | HTML |
+|---|---|---|
+| CSV encoding | Auto-detects utf-8-sig / utf-8 / shift_jis / cp932 | UTF-8 only |
+| Multiple areas/seasons | Multiple values via `-a`/`-s` flags | Single selection |
+| Result display | All records printed to stdout | First 100 shown; full set in CSV download |
+| Analysis output | ASCII bar chart to stdout | Inline HTML bar chart |
