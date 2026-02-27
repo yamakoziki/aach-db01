@@ -304,31 +304,28 @@
             <div class="filter-row">
                 <div class="form-group">
                     <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <label>山域（複数選択可）</label>
+                        <label>山域（複数選択不可）</label>
                         <div>
-                            <button class="select-all-btn" onclick="selectAll('areaSelect')">全選択</button>
                             <button class="select-all-btn" onclick="clearSelect('areaSelect')">解除</button>
                         </div>
                     </div>
-                    <div class="help-text">Ctrl（Mac:⌘）クリックで複数選択</div>
-                    <select id="areaSelect" multiple></select>
+                    <select id="areaSelect"></select>
                 </div>
                 <div class="form-group">
                     <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <label>シーズン（複数選択可）</label>
+                        <label>シーズン</label>
                         <div>
-                            <button class="select-all-btn" onclick="selectAll('seasonSelect')">全選択</button>
                             <button class="select-all-btn" onclick="clearSelect('seasonSelect')">解除</button>
                         </div>
                     </div>
-                    <div class="help-text">Ctrl（Mac:⌘）クリックで複数選択</div>
-                    <select id="seasonSelect" multiple></select>
+                    <div class="help-text">無選択は全期間</div>
+                    <select id="seasonSelect"></select>
                 </div>
             </div>
 
             <div class="form-group">
-                <label>ルートキーワード（山名・尾根名・沢名など、最大5つ・OR検索）</label>
-                <div class="help-text">入力したキーワードのいずれかを含むルートを抽出（空欄は無視）</div>
+                <label>ルートキーワード（山名・尾根名・沢名など、最大5つ・AND検索）</label>
+                <div class="help-text">入力したキーワードのすべてを含むルートを抽出（AND検索・空欄は無視）</div>
                 <div class="route-grid">
                     <input type="text" id="route1" placeholder="キーワード①" />
                     <input type="text" id="route2" placeholder="キーワード②" />
@@ -516,7 +513,7 @@
             if (hasSeasonFilter && !selSeasons.includes(r['シーズン'] || '')) return false;
             if (hasRouteFilter) {
                 const route = (r['ルート・特記事項'] || '') + ' ' + (r['山域'] || '');
-                if (!routeKws.some(kw => route.includes(kw))) return false;
+                if (!routeKws.every(kw => route.includes(kw))) return false;
             }
             return true;
         });

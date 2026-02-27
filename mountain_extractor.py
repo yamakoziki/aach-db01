@@ -8,7 +8,7 @@ AACH登山データ抽出ツール
 
   # 山域・シーズン・ルート条件抽出
   python mountain_extractor.py condition DATA.csv [-a 山域1 山域2] [-s シーズン1] \
-      [-r キーワード1 キーワード2] [-o out.csv] [--analyze]
+      [-r キーワード1 キーワード2] [-o out.csv] [--analyze]  # AND検索
 
   # 一覧確認（山域・シーズンの選択肢を表示）
   python mountain_extractor.py list DATA.csv
@@ -111,7 +111,7 @@ def extract_condition(
             continue
         if route_keywords:
             text = (r.get('ルート・特記事項', '') or '') + ' ' + (r.get('山域', '') or '')
-            if not any(kw in text for kw in route_keywords):
+            if not all(kw in text for kw in route_keywords):
                 continue
         result.append(r)
     return result
@@ -329,7 +329,7 @@ def main():
     p2.add_argument('csv_file', help='登山データCSVファイル')
     p2.add_argument('-a', '--area', nargs='+', metavar='山域', help='山域（複数指定可）')
     p2.add_argument('-s', '--season', nargs='+', metavar='シーズン', help='シーズン（複数指定可）')
-    p2.add_argument('-r', '--route', nargs='+', metavar='キーワード', help='ルートキーワード（最大5つ推奨・OR検索）')
+    p2.add_argument('-r', '--route', nargs='+', metavar='キーワード', help='ルートキーワード（最大5つ推奨・AND検索）')
     p2.add_argument('-o', '--output', help='出力CSVファイルパス')
     p2.add_argument('--analyze', action='store_true', help='分析結果を表示')
     p2.set_defaults(func=cmd_condition)
