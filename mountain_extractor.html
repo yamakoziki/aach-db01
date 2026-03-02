@@ -265,10 +265,16 @@
 
             <div class="form-group">
                 <label>メンバー名</label>
-                <div class="help-text">CSVの「メンバー」列の名称（部分一致対応）</div>
-                <div style="display:flex; gap:8px;">
-                    <input type="text" id="memberName" placeholder="例: 田中太郎"
+                <div class="help-text">部分一致対応。同一人物で表記ゆれがある場合（例：澤柿／沢柿）は②③に別表記を入力してください（OR検索）。</div>
+                <div style="display:flex; gap:8px; margin-bottom:8px;">
+                    <input type="text" id="memberName" placeholder="①名前（例: 田中太郎）"
                         onkeydown="if(event.key==='Enter') extractPersonal()" style="flex:1;" />
+                    <input type="text" id="memberName2" placeholder="②別表記（省略可）"
+                        onkeydown="if(event.key==='Enter') extractPersonal()" style="flex:1;" />
+                    <input type="text" id="memberName3" placeholder="③別表記（省略可）"
+                        onkeydown="if(event.key==='Enter') extractPersonal()" style="flex:1;" />
+                </div>
+                <div style="display:flex; gap:8px;">
                     <button class="btn-primary" onclick="extractPersonal()">抽出</button>
                     <button id="app1-download-btn" class="btn-success" onclick="downloadCSV('personal')" disabled>CSV保存</button>
                 </div>
@@ -502,13 +508,17 @@
 
     // ===== App1: 個人抽出 =====
     function extractPersonal() {
-        const memberName = document.getElementById('memberName').value.trim();
-        if (!memberName) { showMsg('app1-message', 'メンバー名を入力してください。', 'error'); return; }
+        const names = [
+            document.getElementById('memberName').value.trim(),
+            document.getElementById('memberName2').value.trim(),
+            document.getElementById('memberName3').value.trim(),
+        ].filter(Boolean);
+        if (!names.length) { showMsg('app1-message', 'メンバー名を入力してください。', 'error'); return; }
         personalRecords = allRecords.filter(r => {
             const members = (r['メンバー'] || '').split(/\s+/).filter(Boolean);
-            return members.some(m => normalizeName(m).includes(memberName));
+            return members.some(m => names.some(name => normalizeName(m).includes(name)));
         });
-        displayResults(personalRecords, 'app1', memberName);
+        displayResults(personalRecords, 'app1', names.join(' / '));
         document.getElementById('app1-download-btn').disabled = personalRecords.length === 0;
         if (personalRecords.length > 0) {
             document.getElementById('app1-analysis-section').classList.remove('hidden');
@@ -698,12 +708,16 @@
 
     function buildMemberAnalysis(records, type) {
         const isMemberName = type === 'personal';
-        const selfName = isMemberName ? document.getElementById('memberName').value.trim() : '';
+        const selfNames = isMemberName ? [
+            document.getElementById('memberName').value.trim(),
+            document.getElementById('memberName2').value.trim(),
+            document.getElementById('memberName3').value.trim(),
+        ].filter(Boolean) : [];
         const cnt = {};
         records.forEach(r => {
             (r['メンバー']||'').split(/\s+/).filter(Boolean).forEach(m => {
                 const n = normalizeName(m);
-                if (!n || n === '不詳' || (isMemberName && n.includes(selfName))) return;
+                if (!n || n === '不詳' || (isMemberName && selfNames.some(sn => n.includes(sn)))) return;
                 cnt[n] = (cnt[n]||0)+1;
             });
         });
@@ -716,7 +730,8 @@
                 <div class="bar-track"><div class="bar-fill green" style="width:${Math.round(c/max*100)}%"></div></div>
                 <span class="bar-count">${c}</span>
             </div>`).join('');
-        const title = isMemberName ? `${selfName}との同行者（上位15名）` : '参加メンバー頻度（上位15名）';
+        const primaryName = selfNames[0] || '';
+        const title = isMemberName ? `${primaryName}との同行者（上位15名）` : '参加メンバー頻度（上位15名）';
         return `<div class="analysis-card" style="max-width:100%;"><h4>${title}</h4><div class="bar-chart">${rows}</div></div>`;
     }
 

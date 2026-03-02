@@ -86,12 +86,13 @@ def print_records(records: List[Dict]):
 
 # ===== 抽出ロジック =====
 
-def extract_personal(records: List[Dict], member_name: str) -> List[Dict]:
-    """メンバー名で登山記録を抽出（部分一致）"""
+def extract_personal(records: List[Dict], member_names: List[str]) -> List[Dict]:
+    """メンバー名で登山記録を抽出（部分一致・OR検索）"""
     result = []
     for r in records:
         members = (r.get('メンバー', '') or '').split()
-        if any(member_name in normalize_name(m) for m in members):
+        normalized = [normalize_name(m) for m in members]
+        if any(name in norm for name in member_names for norm in normalized):
             result.append(r)
     return result
 
@@ -258,7 +259,8 @@ def cmd_personal(args):
     result = extract_personal(records, args.member_name)
 
     if not result:
-        print(f"「{args.member_name}」の記録が見つかりませんでした。")
+        names_str = '・'.join(args.member_name)
+        print(f"「{names_str}」の記録が見つかりませんでした。")
         return
 
     if args.output:
@@ -267,8 +269,9 @@ def cmd_personal(args):
         print_records(result)
 
     if args.analyze:
+        primary = args.member_name[0]
         for theme in ['seasonal', 'area', 'timeline', 'member', 'stagnation', 'route']:
-            analyze(result, theme, member_name=args.member_name)
+            analyze(result, theme, member_name=primary)
 
 
 def cmd_condition(args):
@@ -324,7 +327,7 @@ def main():
     # --- personal ---
     p1 = sub.add_parser('personal', help='メンバー名で抽出（個人抽出）')
     p1.add_argument('csv_file', help='登山データCSVファイル')
-    p1.add_argument('member_name', help='メンバー名（部分一致）')
+    p1.add_argument('member_name', nargs='+', help='メンバー名（部分一致）。複数指定でOR検索（例: "澤柿" "沢柿"）')
     p1.add_argument('-o', '--output', help='出力CSVファイルパス')
     p1.add_argument('--analyze', action='store_true', help='分析結果を表示')
     p1.set_defaults(func=cmd_personal)

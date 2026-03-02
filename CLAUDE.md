@@ -19,6 +19,9 @@ python mountain_extractor.py list DATA.csv
 # Extract records for a member (partial name match, prints to console)
 python mountain_extractor.py personal DATA.csv "田中太郎"
 
+# Multiple names for OR search (handles variant spellings e.g. 澤柿／沢柿)
+python mountain_extractor.py personal DATA.csv "澤柿" "沢柿"
+
 # Extract + save to CSV + show analysis
 python mountain_extractor.py personal DATA.csv "田中太郎" -o out.csv --analyze
 
@@ -38,7 +41,7 @@ Three CLI subcommands (`personal`, `condition`, `list`) each map to a `cmd_*` fu
 Key functions:
 - `load_csv()`: Tries multiple encodings (`utf-8-sig`, `utf-8`, `shift_jis`, `cp932`) to handle Excel-exported CSVs
 - `save_csv()`: Writes BOM-attached UTF-8 (`utf-8-sig`) for Excel compatibility, outputting only `OUTPUT_COLUMNS`
-- `extract_personal()`: Splits `メンバー` field on whitespace, normalizes each token with `normalize_name()`, then partial-matches
+- `extract_personal()`: Splits `メンバー` field on whitespace, normalizes each token with `normalize_name()`, then partial-matches against one or more names (OR logic for variant spellings)
 - `extract_condition()`: Filters by 山域 (exact match within supplied list), シーズン (exact), and route keywords (AND or OR match, selectable via `route_logic` param, against concatenated `ルート・特記事項 + 山域` text)
 - `normalize_name()`: Strips role prefixes like `L:` and parenthetical suffixes like `（CL）` from member tokens
 - `analyze()`: Dispatches to `_analyze_*` helpers for bar-chart stats. `personal` runs themes `[seasonal, area, timeline, member, stagnation, route]`; `condition` runs `[area, seasonal, timeline, member, stagnation, activity]`.
