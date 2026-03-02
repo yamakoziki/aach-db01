@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>AACH登山データ抽出アプリ</title>
     <style>
         :root {
@@ -582,15 +585,8 @@
 </footer>
 
 <script>
-    async function downloadApp() {
-        let src;
-        try {
-            const res = await fetch(location.href);
-            if (!res.ok) throw new Error('fetch failed');
-            src = await res.text();
-        } catch (e) {
-            src = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
-        }
+    function downloadApp() {
+        const src = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
         const a = Object.assign(document.createElement('a'), {
             href: URL.createObjectURL(new Blob([src], { type: 'text/html;charset=utf-8' })),
             download: 'AACH登山データ抽出アプリ.html',
