@@ -5,251 +5,434 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AACH登山データ抽出アプリ</title>
     <style>
-        * { box-sizing: border-box; }
+        :root {
+            --bg:           #edf0f4;
+            --card:         #ffffff;
+            --shadow:       0 2px 12px rgba(0,0,0,0.08);
+            --shadow-lg:    0 4px 24px rgba(0,0,0,0.13);
+            --radius:       12px;
+            --border:       #dde3ec;
+            --primary:      #2c5f8e;
+            --primary-h:    #1e4a72;
+            --app1:         #c06010;
+            --app1-bg:      #fff7ee;
+            --app1-border:  #e67e22;
+            --app2:         #0e7f70;
+            --app2-bg:      #edfaf8;
+            --app2-border:  #16a085;
+            --purple:       #7c3aed;
+            --purple-h:     #6d28d9;
+            --success:      #15803d;
+            --success-bg:   #f0fdf4;
+            --success-bdr:  #86efac;
+            --error:        #b91c1c;
+            --error-bg:     #fef2f2;
+            --error-bdr:    #fca5a5;
+            --text:         #1e2532;
+            --text-muted:   #6b7280;
+            --text-light:   #9ca3af;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
         body {
             font-family: 'Hiragino Sans', 'Meiryo', sans-serif;
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #f0f4f8;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
-        h1 {
-            color: #2c3e50;
+
+        /* ---- Header ---- */
+        header {
+            background: linear-gradient(135deg, #1a3358 0%, #2c5f8e 55%, #0e7f70 100%);
+            color: white;
             text-align: center;
-            margin-bottom: 10px;
-            font-size: 22px;
+            padding: 28px 20px 22px;
         }
-        h2 { color: #2c3e50; font-size: 18px; margin-bottom: 15px; }
-        h3 { color: #34495e; font-size: 15px; margin-bottom: 10px; }
+        header h1 { font-size: 22px; font-weight: bold; letter-spacing: 0.06em; }
+        header p  { font-size: 12px; opacity: 0.7; margin-top: 5px; letter-spacing: 0.08em; }
+
+        /* ---- Main ---- */
+        main {
+            max-width: 900px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 24px 20px;
+            flex: 1;
+        }
+
+        /* ---- Card ---- */
         .card {
-            background-color: white;
+            background: var(--card);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
             padding: 24px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             margin-bottom: 20px;
         }
-        .form-group { margin-bottom: 16px; }
-        label {
-            display: block;
-            margin-bottom: 4px;
+
+        /* ---- Step Label ---- */
+        .step-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 15px;
             font-weight: bold;
-            color: #34495e;
+            color: var(--text);
+            margin-bottom: 14px;
+        }
+        .step-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 26px; height: 26px;
+            background: var(--primary);
+            color: white;
+            border-radius: 50%;
+            font-size: 13px;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        /* ---- Form ---- */
+        .form-group { margin-bottom: 18px; }
+        .field-label {
+            display: block;
+            font-weight: bold;
+            color: var(--text);
             font-size: 14px;
+            margin-bottom: 5px;
         }
         .help-text {
-            font-size: 11px;
-            color: #95a5a6;
-            margin-bottom: 6px;
-            font-style: italic;
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 9px;
+            line-height: 1.55;
         }
-        input[type="file"], input[type="text"], select {
+        input[type="file"],
+        input[type="text"],
+        select {
             width: 100%;
             padding: 9px 12px;
-            border: 2px solid #ddd;
-            border-radius: 6px;
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
             font-size: 14px;
             font-family: inherit;
-            background-color: white;
-            transition: border-color 0.2s;
+            background: white;
+            color: var(--text);
+            transition: border-color 0.2s, box-shadow 0.2s;
         }
-        input[type="file"]:focus, input[type="text"]:focus, select:focus {
+        input[type="text"]:focus,
+        select:focus {
             outline: none;
-            border-color: #3498db;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(44,95,142,0.12);
         }
-        select[multiple] { height: 120px; }
+
+        /* ---- Logic Toggle (pill AND/OR) ---- */
+        .logic-toggle {
+            display: inline-flex;
+            background: #eef0f4;
+            border-radius: 20px;
+            padding: 3px;
+            gap: 2px;
+            margin-bottom: 10px;
+        }
+        .logic-toggle input[type="radio"] { display: none; }
+        .toggle-label {
+            display: inline-block;
+            padding: 5px 16px;
+            border-radius: 16px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-muted);
+            transition: all 0.18s;
+            user-select: none;
+        }
+        .logic-toggle input[type="radio"]:checked + .toggle-label {
+            background: white;
+            color: var(--text);
+            font-weight: bold;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.14);
+        }
+
+        /* ---- Buttons ---- */
+        button {
+            padding: 9px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-family: inherit;
+            font-weight: bold;
+            transition: background-color 0.18s, transform 0.1s, box-shadow 0.18s;
+        }
+        button:active:not(:disabled) { transform: scale(0.97); }
+        button:disabled { background: #d1d5db !important; cursor: not-allowed; color: #9ca3af !important; box-shadow: none !important; }
+
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover:not(:disabled) { background: var(--primary-h); box-shadow: 0 2px 8px rgba(44,95,142,0.3); }
+        .btn-success { background: var(--success); color: white; }
+        .btn-success:hover:not(:disabled) { background: #166534; box-shadow: 0 2px 8px rgba(21,128,61,0.3); }
+        .btn-back  { background: #e5e7eb; color: #374151; font-weight: 600; }
+        .btn-back:hover  { background: #d1d5db; }
+        .btn-reset { background: #f3f4f6; color: var(--text-muted); font-size: 13px; padding: 7px 14px; }
+        .btn-reset:hover { background: #e5e7eb; color: var(--text); }
+
+        /* Analysis buttons */
+        .btn-analysis {
+            background: transparent;
+            border: 1.5px solid var(--purple);
+            color: var(--purple);
+            border-radius: 20px;
+            padding: 6px 14px;
+            font-size: 13px;
+            font-weight: 600;
+            margin: 3px 4px 3px 0;
+        }
+        .btn-analysis:hover:not(:disabled) { background: #f3eeff; }
+        .btn-analysis.active { background: var(--purple); color: white; }
+
+        /* Clear button for selects */
+        .clear-btn {
+            font-size: 12px;
+            padding: 3px 10px;
+            background: #f3f4f6;
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: normal;
+        }
+        .clear-btn:hover { background: #e5e7eb; color: var(--text); }
+
+        /* ---- App Select ---- */
+        .app-select-area {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+            padding: 6px 0 2px;
+        }
+        .app-btn-box {
+            flex: 1;
+            min-width: 190px;
+            max-width: 260px;
+            text-align: center;
+            padding: 22px 20px;
+            border-radius: var(--radius);
+            border: 2.5px solid transparent;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: var(--card);
+        }
+        .app-btn-box.app1 { border-color: var(--app1-border); }
+        .app-btn-box.app1:hover { background: var(--app1-bg); box-shadow: var(--shadow-lg); }
+        .app-btn-box.app2 { border-color: var(--app2-border); }
+        .app-btn-box.app2:hover { background: var(--app2-bg); box-shadow: var(--shadow-lg); }
+        .app-btn-box .icon { font-size: 38px; margin-bottom: 8px; }
+        .app-btn-box .name { font-size: 16px; font-weight: bold; color: var(--text); }
+        .app-btn-box .desc { font-size: 12px; color: var(--text-muted); margin-top: 6px; line-height: 1.55; }
+
+        /* ---- Section Header ---- */
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .section-header h2 { font-size: 18px; color: var(--text); }
+
+        /* ---- Divider ---- */
+        .divider {
+            border: none;
+            border-top: 1.5px solid #eef0f4;
+            margin: 22px 0;
+        }
+
+        /* ---- Filter Row ---- */
+        .filter-row { display: flex; gap: 14px; }
+        .filter-row > .form-group { flex: 1; }
+        .filter-label-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+
+        /* ---- Route Grid ---- */
         .route-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 8px;
         }
         .route-grid input:last-child:nth-child(odd) { grid-column: 1 / -1; }
-        button {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
+
+        /* ---- Messages ---- */
+        .msg {
+            padding: 10px 14px;
+            border-radius: 8px;
+            margin: 10px 0;
             font-size: 14px;
-            font-family: inherit;
-            font-weight: bold;
-            transition: background-color 0.2s, transform 0.1s;
-            margin-right: 8px;
-            margin-bottom: 4px;
+            border-left: 4px solid;
         }
-        button:active { transform: scale(0.98); }
-        button:disabled { background-color: #bdc3c7; cursor: not-allowed; color: #7f8c8d; }
-        .btn-primary { background-color: #3498db; color: white; }
-        .btn-primary:hover:not(:disabled) { background-color: #2980b9; }
-        .btn-success { background-color: #27ae60; color: white; }
-        .btn-success:hover:not(:disabled) { background-color: #229954; }
-        .btn-purple { background-color: #9b59b6; color: white; }
-        .btn-purple:hover:not(:disabled) { background-color: #8e44ad; }
-        .btn-app1 { background-color: #e67e22; color: white; font-size: 16px; padding: 14px 32px; }
-        .btn-app1:hover { background-color: #d35400; }
-        .btn-app2 { background-color: #16a085; color: white; font-size: 16px; padding: 14px 32px; }
-        .btn-app2:hover { background-color: #1a8a72; }
-        .btn-back { background-color: #95a5a6; color: white; }
-        .btn-back:hover { background-color: #7f8c8d; }
-        .app-select-area {
-            display: flex;
-            gap: 20px;
-            justify-content: center;
-            flex-wrap: wrap;
-            padding: 10px 0;
-        }
-        .app-btn-box {
-            text-align: center;
-            padding: 20px;
-            border-radius: 10px;
-            border: 3px solid transparent;
-            cursor: pointer;
-            transition: all 0.2s;
-            min-width: 200px;
-        }
-        .app-btn-box.app1 { border-color: #e67e22; }
-        .app-btn-box.app1:hover { background-color: #fdf3e7; }
-        .app-btn-box.app2 { border-color: #16a085; }
-        .app-btn-box.app2:hover { background-color: #e8f8f5; }
-        .app-btn-box .icon { font-size: 36px; margin-bottom: 8px; }
-        .app-btn-box .name { font-size: 16px; font-weight: bold; }
-        .app-btn-box .desc { font-size: 12px; color: #7f8c8d; margin-top: 4px; }
-        .msg-success {
-            color: #27ae60; background-color: #eafaf1;
-            padding: 10px 14px; border-radius: 6px; margin: 8px 0;
-            border-left: 4px solid #27ae60; font-size: 14px;
-        }
-        .msg-error {
-            color: #e74c3c; background-color: #fdedec;
-            padding: 10px 14px; border-radius: 6px; margin: 8px 0;
-            border-left: 4px solid #e74c3c; font-size: 14px;
-        }
-        .record {
-            background-color: #f8f9fa;
-            padding: 12px 16px;
-            margin-bottom: 8px;
-            border-radius: 6px;
-            border-left: 4px solid #3498db;
-            font-size: 13px;
-        }
-        .record.app2-record { border-left-color: #16a085; }
-        .record-title { font-weight: bold; color: #2c3e50; margin-bottom: 4px; }
-        .record-details { color: #7f8c8d; line-height: 1.6; }
-        .analysis-result {
-            background-color: #f8f9fa;
-            border: 1px solid #dee2e6;
-            border-radius: 6px;
-            padding: 20px;
-            margin-top: 16px;
-            white-space: pre-wrap;
-            font-family: 'Hiragino Sans', 'Meiryo', monospace;
-            line-height: 1.7;
-            font-size: 13px;
-        }
-        .section-divider {
-            border-top: 2px solid #ecf0f1;
-            margin: 24px 0;
-            padding-top: 20px;
-        }
+        .msg-success { color: var(--success); background: var(--success-bg); border-color: var(--success-bdr); }
+        .msg-error   { color: var(--error);   background: var(--error-bg);   border-color: var(--error-bdr); }
+
+        /* ---- File Info ---- */
         .file-info {
-            background-color: #eaf4fb;
-            border: 1px solid #aed6f1;
-            border-radius: 6px;
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 8px;
             padding: 10px 14px;
             font-size: 13px;
-            color: #2980b9;
-            margin-top: 8px;
+            color: #1e40af;
+            margin-top: 10px;
         }
-        .filter-row { display: flex; gap: 12px; }
-        .filter-row > div { flex: 1; }
+
+        /* ---- Results ---- */
         .results-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 12px;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 1.5px solid #eef0f4;
         }
-        .results-count { font-size: 14px; color: #7f8c8d; }
-        #app1-section, #app2-section, #app-select, #csv-step { }
-        .hidden { display: none; }
-        .step-badge {
-            display: inline-block;
-            background-color: #3498db;
-            color: white;
-            border-radius: 50%;
-            width: 22px; height: 22px;
-            text-align: center;
-            line-height: 22px;
+        .results-label { font-weight: bold; font-size: 14px; color: var(--text); }
+        .results-count {
+            background: #eef0f4;
+            color: var(--text-muted);
             font-size: 12px;
-            font-weight: bold;
-            margin-right: 6px;
-        }
-        .tag {
-            display: inline-block;
-            background-color: #ecf0f1;
-            color: #2c3e50;
-            padding: 2px 8px;
+            padding: 3px 10px;
             border-radius: 12px;
-            font-size: 12px;
-            margin: 2px;
+            font-weight: bold;
         }
-        .select-all-btn {
+        .record {
+            background: #fafbfc;
+            padding: 12px 14px;
+            margin-bottom: 7px;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary);
+            font-size: 13px;
+            transition: background 0.15s;
+        }
+        .record:hover { background: #f0f4fa; }
+        .record.app2-record { border-left-color: var(--app2); }
+        .record-title { font-weight: bold; color: var(--text); margin-bottom: 5px; }
+        .record-details { color: var(--text-muted); line-height: 1.75; }
+        .record-tag {
+            display: inline-block;
+            background: #e8edf4;
+            color: #374151;
+            padding: 1px 8px;
+            border-radius: 10px;
             font-size: 11px;
-            padding: 3px 8px;
-            background-color: #ecf0f1;
-            color: #2c3e50;
-            border: 1px solid #bdc3c7;
+            margin-right: 4px;
+            vertical-align: middle;
         }
-        .select-all-btn:hover { background-color: #d5d8dc; }
-        .analysis-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-        }
+
+        /* ---- Analysis ---- */
+        .analysis-title { font-size: 15px; font-weight: bold; color: var(--text); margin-bottom: 12px; }
+        .analysis-buttons { display: flex; flex-wrap: wrap; margin-bottom: 14px; }
         .analysis-card {
-            background-color: #f8f9fa;
-            border: 1px solid #dee2e6;
-            border-radius: 6px;
-            padding: 14px;
+            background: #fafbfc;
+            border: 1.5px solid #eef0f4;
+            border-radius: 10px;
+            padding: 16px 18px;
+            margin-top: 4px;
         }
-        .analysis-card h4 { margin: 0 0 8px 0; color: #2c3e50; font-size: 13px; }
-        .bar-chart { margin-top: 6px; }
-        .bar-row { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; font-size: 12px; }
-        .bar-label { width: 100px; text-align: right; color: #555; flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .bar-track { flex: 1; background-color: #ecf0f1; border-radius: 3px; height: 14px; }
-        .bar-fill { height: 100%; border-radius: 3px; background-color: #3498db; transition: width 0.3s; }
-        .bar-fill.green { background-color: #27ae60; }
-        .bar-fill.orange { background-color: #e67e22; }
-        .bar-fill.teal { background-color: #16a085; }
-        .bar-count { width: 30px; color: #7f8c8d; font-size: 11px; }
+        .analysis-card h4 {
+            font-size: 14px;
+            color: var(--text);
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1.5px solid #eef0f4;
+        }
+        .bar-chart { margin-top: 4px; }
+        .bar-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+        .bar-label { width: 110px; text-align: right; color: var(--text-muted); flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; }
+        .bar-track { flex: 1; background: #eef0f4; border-radius: 4px; height: 16px; overflow: hidden; }
+        .bar-fill { height: 100%; border-radius: 4px; transition: width 0.4s ease; }
+        .bar-fill.blue   { background: linear-gradient(90deg, #3b82f6, #60a5fa); }
+        .bar-fill.green  { background: linear-gradient(90deg, #16a34a, #4ade80); }
+        .bar-fill.orange { background: linear-gradient(90deg, #ea580c, #fb923c); }
+        .bar-fill.teal   { background: linear-gradient(90deg, #0d9488, #2dd4bf); }
+        .bar-count { width: 32px; text-align: right; color: var(--text-muted); font-size: 12px; font-weight: bold; }
+
+        .stat-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
+        .stat-item {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 8px 14px;
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+        .stat-item strong { color: var(--text); }
+
+        /* ---- Footer ---- */
+        footer {
+            background: #2c3a4a;
+            padding: 16px 20px;
+        }
+        .footer-inner {
+            max-width: 900px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 6px;
+            font-size: 12px;
+            color: rgba(255,255,255,0.55);
+        }
+        .footer-credit { color: rgba(255,255,255,0.88); font-weight: bold; }
+
+        /* ---- Misc ---- */
+        .hidden { display: none !important; }
+        .mt-8  { margin-top: 8px; }
+        .mt-10 { margin-top: 10px; }
+        .btn-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
     </style>
 </head>
 <body>
+
+<header>
+    <h1>⛰ AACH 登山データ抽出アプリ</h1>
+    <p>AACH 山行記録データベース 検索・分析ツール</p>
+</header>
+
+<main>
+
+    <!-- Step 1: CSV選択 -->
     <div class="card">
-        <h1>AACH 登山データ抽出アプリ</h1>
-
-        <!-- Step 1: CSV選択 -->
-        <div id="csv-step">
-            <div class="form-group">
-                <label><span class="step-badge">1</span>CSVファイルを選択</label>
-                <div class="help-text">登山データCSVファイルを選択してください（UTF-8推奨）</div>
-                <input type="file" id="csvFile" accept=".csv" onchange="onCSVSelected()" />
-            </div>
-            <div id="csv-file-info" class="hidden"></div>
+        <div class="step-label">
+            <span class="step-badge">1</span>CSVファイルを選択
         </div>
+        <div class="help-text">登山データCSVファイルを選択してください（UTF-8形式）</div>
+        <input type="file" id="csvFile" accept=".csv" onchange="onCSVSelected()" />
+        <div id="csv-file-info" class="hidden"></div>
+    </div>
 
-        <!-- Step 2: アプリ選択 -->
-        <div id="app-select" class="hidden">
-            <div class="section-divider">
-                <label><span class="step-badge">2</span>使用するアプリを選択</label>
-                <div class="app-select-area">
-                    <div class="app-btn-box app1" onclick="showApp(1)">
-                        <div class="icon">👤</div>
-                        <div class="name">個人抽出</div>
-                        <div class="desc">メンバー名で登山記録を抽出</div>
-                    </div>
-                    <div class="app-btn-box app2" onclick="showApp(2)">
-                        <div class="icon">🗻</div>
-                        <div class="name">山域・シーズン・ルート抽出</div>
-                        <div class="desc">山域・季節・ルートで条件検索</div>
-                    </div>
+    <!-- Step 2: アプリ選択 -->
+    <div id="app-select" class="hidden">
+        <div class="card">
+            <div class="step-label">
+                <span class="step-badge">2</span>使用する機能を選択
+            </div>
+            <div class="app-select-area">
+                <div class="app-btn-box app1" onclick="showApp(1)">
+                    <div class="icon">👤</div>
+                    <div class="name">個人抽出</div>
+                    <div class="desc">メンバー名で登山記録を検索<br>同行者検索・表記ゆれにも対応</div>
+                </div>
+                <div class="app-btn-box app2" onclick="showApp(2)">
+                    <div class="icon">🗻</div>
+                    <div class="name">条件抽出</div>
+                    <div class="desc">山域・季節・ルートキーワードで<br>複合条件検索</div>
                 </div>
             </div>
         </div>
@@ -258,86 +441,87 @@
     <!-- App 1: 個人抽出 -->
     <div id="app1-section" class="hidden">
         <div class="card">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div class="section-header">
                 <h2>👤 個人抽出</h2>
-                <button class="btn-back" onclick="backToSelect()">← アプリ選択に戻る</button>
+                <button class="btn-back" onclick="backToSelect()">← 機能選択に戻る</button>
             </div>
 
             <div class="form-group">
-                <label>メンバー名</label>
-                <div class="help-text">部分一致対応。同一人物で表記ゆれがある場合（例：澤柿／沢柿）は②③に別表記を入力してください（OR検索）。</div>
-                <div style="display:flex; gap:8px; margin-bottom:8px;">
-                    <input type="text" id="memberName" placeholder="①名前（例: 田中太郎）"
+                <span class="field-label">メンバー名</span>
+                <div class="help-text">AND: 複数人が同行した山行を検索（例: 澤柿 AND 石橋）／ OR: 表記ゆれがある場合（例: 澤柿 OR 沢柿）</div>
+                <div class="logic-toggle">
+                    <input type="radio" name="nameLogic" id="nameLogicOr" value="or" checked>
+                    <label class="toggle-label" for="nameLogicOr">OR検索</label>
+                    <input type="radio" name="nameLogic" id="nameLogicAnd" value="and">
+                    <label class="toggle-label" for="nameLogicAnd">AND検索</label>
+                </div>
+                <div style="display:flex; gap:8px; margin-bottom:10px;">
+                    <input type="text" id="memberName"  placeholder="①名前（例: 田中太郎）"
                         onkeydown="if(event.key==='Enter') extractPersonal()" style="flex:1;" />
-                    <input type="text" id="memberName2" placeholder="②別表記（省略可）"
+                    <input type="text" id="memberName2" placeholder="②名前②（省略可）"
                         onkeydown="if(event.key==='Enter') extractPersonal()" style="flex:1;" />
-                    <input type="text" id="memberName3" placeholder="③別表記（省略可）"
+                    <input type="text" id="memberName3" placeholder="③名前③（省略可）"
                         onkeydown="if(event.key==='Enter') extractPersonal()" style="flex:1;" />
                 </div>
-                <div style="display:flex; gap:8px;">
+                <div class="btn-row">
                     <button class="btn-primary" onclick="extractPersonal()">抽出</button>
                     <button id="app1-download-btn" class="btn-success" onclick="downloadCSV('personal')" disabled>CSV保存</button>
+                    <button class="btn-reset" onclick="resetApp1()">リセット</button>
                 </div>
             </div>
 
             <div id="app1-message"></div>
-
             <div id="app1-results"></div>
 
-            <div id="app1-analysis-section" class="section-divider hidden">
-                <h3>データ分析</h3>
-                <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px;">
-                    <button class="btn-purple" onclick="runAnalysis('personal','seasonal')">季節別</button>
-                    <button class="btn-purple" onclick="runAnalysis('personal','area')">山域別</button>
-                    <button class="btn-purple" onclick="runAnalysis('personal','member')">同行者</button>
-                    <button class="btn-purple" onclick="runAnalysis('personal','timeline')">年代別</button>
-                    <button class="btn-purple" onclick="runAnalysis('personal','stagnation')">停滞分析</button>
-                    <button class="btn-purple" onclick="runAnalysis('personal','route')">ルート特徴</button>
+            <div id="app1-analysis-section" class="hidden">
+                <hr class="divider">
+                <div class="analysis-title">データ分析</div>
+                <div class="analysis-buttons">
+                    <button class="btn-analysis" onclick="runAnalysis('personal','seasonal')">季節別</button>
+                    <button class="btn-analysis" onclick="runAnalysis('personal','area')">山域別</button>
+                    <button class="btn-analysis" onclick="runAnalysis('personal','member')">同行者</button>
+                    <button class="btn-analysis" onclick="runAnalysis('personal','timeline')">年代別</button>
+                    <button class="btn-analysis" onclick="runAnalysis('personal','stagnation')">停滞分析</button>
+                    <button class="btn-analysis" onclick="runAnalysis('personal','route')">ルート特徴</button>
                 </div>
                 <div id="app1-analysis-result"></div>
             </div>
         </div>
     </div>
 
-    <!-- App 2: 山域・シーズン・ルート抽出 -->
+    <!-- App 2: 条件抽出 -->
     <div id="app2-section" class="hidden">
         <div class="card">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-                <h2>🗻 山域・シーズン・ルート抽出</h2>
-                <button class="btn-back" onclick="backToSelect()">← アプリ選択に戻る</button>
+            <div class="section-header">
+                <h2>🗻 条件抽出</h2>
+                <button class="btn-back" onclick="backToSelect()">← 機能選択に戻る</button>
             </div>
 
             <div class="filter-row">
                 <div class="form-group">
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <label>山域</label>
-                        <div>
-                            <button class="select-all-btn" onclick="selectDefaultArea()">解除</button>
-                        </div>
+                    <div class="filter-label-row">
+                        <span class="field-label">山域</span>
+                        <button class="clear-btn" onclick="selectDefaultArea()">解除</button>
                     </div>
                     <select id="areaSelect"></select>
                 </div>
                 <div class="form-group">
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <label>シーズン</label>
-                        <div>
-                            <button class="select-all-btn" onclick="selectDefaultSeason()">解除</button>
-                        </div>
+                    <div class="filter-label-row">
+                        <span class="field-label">シーズン</span>
+                        <button class="clear-btn" onclick="selectDefaultSeason()">解除</button>
                     </div>
                     <select id="seasonSelect"></select>
                 </div>
             </div>
 
             <div class="form-group">
-                <label>ルートキーワード（山名・尾根名・沢名など、最大5つ）</label>
-                <div class="help-text">空欄は無視。AND: すべてを含む ／ OR: いずれかを含む</div>
-                <div style="margin-bottom:8px;">
-                    <label style="display:inline; font-weight:normal; margin-right:20px; cursor:pointer;">
-                        <input type="radio" name="routeLogic" value="and" checked> AND検索（すべてを含む）
-                    </label>
-                    <label style="display:inline; font-weight:normal; cursor:pointer;">
-                        <input type="radio" name="routeLogic" value="or"> OR検索（いずれかを含む）
-                    </label>
+                <span class="field-label">ルートキーワード（最大5つ）</span>
+                <div class="help-text">山名・尾根名・沢名など。空欄は無視。AND: すべてを含む ／ OR: いずれかを含む</div>
+                <div class="logic-toggle">
+                    <input type="radio" name="routeLogic" id="routeLogicAnd" value="and" checked>
+                    <label class="toggle-label" for="routeLogicAnd">AND検索</label>
+                    <input type="radio" name="routeLogic" id="routeLogicOr" value="or">
+                    <label class="toggle-label" for="routeLogicOr">OR検索</label>
                 </div>
                 <div class="route-grid">
                     <input type="text" id="route1" placeholder="キーワード①" />
@@ -348,29 +532,39 @@
                 </div>
             </div>
 
-            <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+            <div class="btn-row">
                 <button class="btn-primary" onclick="extractByCondition()">抽出</button>
                 <button id="app2-download-btn" class="btn-success" onclick="downloadCSV('condition')" disabled>CSV保存</button>
-                <button class="btn-back" style="margin-left:auto;" onclick="resetApp2Filters()">条件リセット</button>
+                <button class="btn-reset" onclick="resetApp2()">リセット</button>
             </div>
 
             <div id="app2-message"></div>
             <div id="app2-results"></div>
 
-            <div id="app2-analysis-section" class="section-divider hidden">
-                <h3>データ分析</h3>
-                <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px;">
-                    <button class="btn-purple" onclick="runAnalysis('condition','area')">山域別集計</button>
-                    <button class="btn-purple" onclick="runAnalysis('condition','seasonal')">シーズン別</button>
-                    <button class="btn-purple" onclick="runAnalysis('condition','timeline')">年代別</button>
-                    <button class="btn-purple" onclick="runAnalysis('condition','member')">参加メンバー</button>
-                    <button class="btn-purple" onclick="runAnalysis('condition','stagnation')">停滞分析</button>
-                    <button class="btn-purple" onclick="runAnalysis('condition','activity')">行動日数</button>
+            <div id="app2-analysis-section" class="hidden">
+                <hr class="divider">
+                <div class="analysis-title">データ分析</div>
+                <div class="analysis-buttons">
+                    <button class="btn-analysis" onclick="runAnalysis('condition','area')">山域別集計</button>
+                    <button class="btn-analysis" onclick="runAnalysis('condition','seasonal')">シーズン別</button>
+                    <button class="btn-analysis" onclick="runAnalysis('condition','timeline')">年代別</button>
+                    <button class="btn-analysis" onclick="runAnalysis('condition','member')">参加メンバー</button>
+                    <button class="btn-analysis" onclick="runAnalysis('condition','stagnation')">停滞分析</button>
+                    <button class="btn-analysis" onclick="runAnalysis('condition','activity')">行動日数</button>
                 </div>
                 <div id="app2-analysis-result"></div>
             </div>
         </div>
     </div>
+
+</main>
+
+<footer>
+    <div class="footer-inner">
+        <span>最終更新: 2026年3月2日</span>
+        <span class="footer-credit">Made by Yamakoziki &amp; Claude ⛰</span>
+    </div>
+</footer>
 
 <script>
     let allRecords = [];
@@ -386,21 +580,26 @@
         reader.onload = function(e) {
             try {
                 allRecords = parseCSV(e.target.result);
-                showFileInfo(file.name, allRecords.length);
+                const el = document.getElementById('csv-file-info');
+                el.className = 'file-info';
+                el.innerHTML = `✅ <strong>${esc(file.name)}</strong> を読み込みました（${allRecords.length}件）`;
+                el.classList.remove('hidden');
                 document.getElementById('app-select').classList.remove('hidden');
                 populateDropdowns();
             } catch(err) {
-                showMsg('csv-file-info', 'CSVの読み込みに失敗しました: ' + err.message, 'error');
+                const el = document.getElementById('csv-file-info');
+                el.className = '';
+                el.innerHTML = `<div class="msg msg-error mt-8">CSVの読み込みに失敗しました: ${esc(err.message)}</div>`;
+                el.classList.remove('hidden');
             }
         };
-        reader.onerror = () => showMsg('csv-file-info', 'ファイル読み込みエラー', 'error');
+        reader.onerror = () => {
+            const el = document.getElementById('csv-file-info');
+            el.className = '';
+            el.innerHTML = '<div class="msg msg-error mt-8">ファイル読み込みエラー</div>';
+            el.classList.remove('hidden');
+        };
         reader.readAsText(file, 'utf-8');
-    }
-
-    function showFileInfo(name, count) {
-        const el = document.getElementById('csv-file-info');
-        el.className = 'file-info';
-        el.innerHTML = `✅ <strong>${name}</strong> を読み込みました（${count}件）`;
     }
 
     function parseCSV(csv) {
@@ -441,13 +640,13 @@
         document.getElementById('app1-section').classList.add('hidden');
         document.getElementById('app2-section').classList.add('hidden');
         document.getElementById('app' + n + '-section').classList.remove('hidden');
-        window.scrollTo(0, document.getElementById('app' + n + '-section').offsetTop - 20);
+        window.scrollTo({ top: document.getElementById('app' + n + '-section').offsetTop - 20, behavior: 'smooth' });
     }
 
     function backToSelect() {
         document.getElementById('app1-section').classList.add('hidden');
         document.getElementById('app2-section').classList.add('hidden');
-        window.scrollTo(0, 0);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     // ===== ドロップダウン生成 =====
@@ -459,7 +658,7 @@
 
     function populateDropdowns() {
         const dataAreas = new Set(allRecords.map(r => r['山域'] || '').filter(v => v));
-        const ordered = AREA_ORDER.filter(a => dataAreas.has(a));
+        const ordered   = AREA_ORDER.filter(a => dataAreas.has(a));
         const remaining = [...dataAreas].filter(a => !AREA_ORDER.includes(a)).sort();
         fillSelect('areaSelect', ['全山域', ...ordered, ...remaining]);
         document.getElementById('areaSelect').value = '全山域';
@@ -470,40 +669,38 @@
     }
 
     function fillSelect(id, values) {
-        const sel = document.getElementById(id);
-        sel.innerHTML = values.map(v => `<option value="${esc(v)}">${v}</option>`).join('');
+        document.getElementById(id).innerHTML =
+            values.map(v => `<option value="${esc(v)}">${esc(v)}</option>`).join('');
     }
 
-    function selectAll(id) {
-        const sel = document.getElementById(id);
-        for (const opt of sel.options) opt.selected = true;
+    function selectDefaultArea()   { document.getElementById('areaSelect').value = '全山域'; }
+    function selectDefaultSeason() { document.getElementById('seasonSelect').value = '全期間'; }
+
+    // ===== リセット =====
+    function resetApp1() {
+        ['memberName','memberName2','memberName3'].forEach(id => document.getElementById(id).value = '');
+        document.getElementById('nameLogicOr').checked = true;
+        document.getElementById('app1-message').innerHTML = '';
+        document.getElementById('app1-results').innerHTML = '';
+        document.getElementById('app1-analysis-section').classList.add('hidden');
+        document.getElementById('app1-analysis-result').innerHTML = '';
+        document.getElementById('app1-download-btn').disabled = true;
+        personalRecords = [];
+        clearAnalysisActive('personal');
     }
 
-    function clearSelect(id) {
-        const sel = document.getElementById(id);
-        for (const opt of sel.options) opt.selected = false;
-    }
-
-    function selectDefaultArea() {
-        document.getElementById('areaSelect').value = '全山域';
-    }
-
-    function selectDefaultSeason() {
-        document.getElementById('seasonSelect').value = '全期間';
-    }
-
-    function resetApp2Filters() {
+    function resetApp2() {
         selectDefaultArea();
         selectDefaultSeason();
-        document.querySelector('input[name="routeLogic"][value="and"]').checked = true;
-        ['route1','route2','route3','route4','route5'].forEach(id => {
-            document.getElementById(id).value = '';
-        });
+        document.getElementById('routeLogicAnd').checked = true;
+        ['route1','route2','route3','route4','route5'].forEach(id => document.getElementById(id).value = '');
         document.getElementById('app2-message').innerHTML = '';
         document.getElementById('app2-results').innerHTML = '';
         document.getElementById('app2-analysis-section').classList.add('hidden');
+        document.getElementById('app2-analysis-result').innerHTML = '';
         document.getElementById('app2-download-btn').disabled = true;
         conditionRecords = [];
+        clearAnalysisActive('condition');
     }
 
     // ===== App1: 個人抽出 =====
@@ -514,15 +711,23 @@
             document.getElementById('memberName3').value.trim(),
         ].filter(Boolean);
         if (!names.length) { showMsg('app1-message', 'メンバー名を入力してください。', 'error'); return; }
+
+        const nameLogic = document.querySelector('input[name="nameLogic"]:checked').value;
         personalRecords = allRecords.filter(r => {
             const members = (r['メンバー'] || '').split(/\s+/).filter(Boolean);
-            return members.some(m => names.some(name => normalizeName(m).includes(name)));
+            return nameLogic === 'and'
+                ? names.every(name => members.some(m => normalizeName(m).includes(name)))
+                : members.some(m => names.some(name => normalizeName(m).includes(name)));
         });
-        displayResults(personalRecords, 'app1', names.join(' / '));
+
+        const sep = nameLogic === 'and' ? ' AND ' : ' / ';
+        displayResults(personalRecords, 'app1', names.join(sep));
         document.getElementById('app1-download-btn').disabled = personalRecords.length === 0;
         if (personalRecords.length > 0) {
             document.getElementById('app1-analysis-section').classList.remove('hidden');
         }
+        clearAnalysisActive('personal');
+        document.getElementById('app1-analysis-result').innerHTML = '';
     }
 
     function normalizeName(name) {
@@ -531,95 +736,77 @@
 
     // ===== App2: 条件抽出 =====
     function extractByCondition() {
-        const selArea = document.getElementById('areaSelect').value;
-        const selSeason = document.getElementById('seasonSelect').value;
-        const routeKws = ['route1','route2','route3','route4','route5']
+        const selArea    = document.getElementById('areaSelect').value;
+        const selSeason  = document.getElementById('seasonSelect').value;
+        const routeKws   = ['route1','route2','route3','route4','route5']
             .map(id => document.getElementById(id).value.trim()).filter(Boolean);
         const routeLogic = document.querySelector('input[name="routeLogic"]:checked').value;
 
-        const hasAreaFilter = selArea && selArea !== '全山域';
-        const hasSeasonFilter = selSeason && selSeason !== '全期間';
-        const hasRouteFilter = routeKws.length > 0;
+        const hasArea    = selArea   && selArea   !== '全山域';
+        const hasSeason  = selSeason && selSeason !== '全期間';
+        const hasRoute   = routeKws.length > 0;
 
-        if (!hasAreaFilter && !hasSeasonFilter && !hasRouteFilter) {
+        if (!hasArea && !hasSeason && !hasRoute) {
             showMsg('app2-message', '山域・シーズン・ルートキーワードのいずれかを選択・入力してください。', 'error');
             return;
         }
 
         conditionRecords = allRecords.filter(r => {
-            if (hasAreaFilter && selArea !== (r['山域'] || '')) return false;
-            if (hasSeasonFilter && selSeason !== (r['シーズン'] || '')) return false;
-            if (hasRouteFilter) {
-                const route = (r['ルート・特記事項'] || '') + ' ' + (r['山域'] || '');
-                const match = routeLogic === 'and'
-                    ? routeKws.every(kw => route.includes(kw))
-                    : routeKws.some(kw => route.includes(kw));
-                if (!match) return false;
+            if (hasArea   && selArea   !== (r['山域']    || '')) return false;
+            if (hasSeason && selSeason !== (r['シーズン'] || '')) return false;
+            if (hasRoute) {
+                const text = (r['ルート・特記事項'] || '') + ' ' + (r['山域'] || '');
+                const ok = routeLogic === 'and'
+                    ? routeKws.every(kw => text.includes(kw))
+                    : routeKws.some(kw => text.includes(kw));
+                if (!ok) return false;
             }
             return true;
         });
 
-        const labelAreas = hasAreaFilter ? [selArea] : [];
-        const labelSeasons = hasSeasonFilter ? [selSeason] : [];
-        displayResults(conditionRecords, 'app2', buildConditionLabel(labelAreas, labelSeasons, routeKws, routeLogic));
+        const parts = [];
+        if (hasArea)   parts.push(selArea);
+        if (hasSeason) parts.push(selSeason);
+        if (hasRoute)  parts.push(`[${routeLogic.toUpperCase()}] ${routeKws.join('・')}`);
+        displayResults(conditionRecords, 'app2', parts.join(' / '));
         document.getElementById('app2-download-btn').disabled = conditionRecords.length === 0;
         if (conditionRecords.length > 0) {
             document.getElementById('app2-analysis-section').classList.remove('hidden');
         }
-    }
-
-    function getSelected(id) {
-        const sel = document.getElementById(id);
-        return Array.from(sel.selectedOptions).map(o => o.value);
-    }
-
-    function buildConditionLabel(areas, seasons, routes, routeLogic) {
-        const parts = [];
-        if (areas.length) parts.push('山域:' + areas.slice(0,3).join('・') + (areas.length>3?'…':''));
-        if (seasons.length) parts.push('シーズン:' + seasons.join('・'));
-        if (routes.length) {
-            const logicLabel = routeLogic === 'or' ? '[OR]' : '[AND]';
-            parts.push('ルート' + logicLabel + ':' + routes.join('・'));
-        }
-        return parts.join(' / ');
+        clearAnalysisActive('condition');
+        document.getElementById('app2-analysis-result').innerHTML = '';
     }
 
     // ===== 結果表示 =====
     function displayResults(records, appId, label) {
-        const msgId = appId + '-message';
-        const resId = appId + '-results';
         const isApp2 = appId === 'app2';
-
         if (records.length === 0) {
-            showMsg(msgId, `「${label}」の記録が見つかりませんでした。`, 'error');
-            document.getElementById(resId).innerHTML = '';
+            showMsg(appId + '-message', `「${esc(label)}」の記録が見つかりませんでした。`, 'error');
+            document.getElementById(appId + '-results').innerHTML = '';
             return;
         }
-
-        showMsg(msgId, `${records.length}件の記録が見つかりました。`, 'success');
+        showMsg(appId + '-message', `${records.length}件の記録が見つかりました。`, 'success');
 
         let html = `<div class="results-header">
-            <strong>${label}</strong>
+            <span class="results-label">${esc(label)}</span>
             <span class="results-count">${records.length}件</span>
         </div>`;
 
         records.slice(0, 100).forEach((r, i) => {
-            const cls = isApp2 ? 'record app2-record' : 'record';
-            html += `<div class="${cls}">
-                <div class="record-title">[${i+1}] ${r['年度']||''} ${r['開始日']||''} ～ ${r['終了日']||''} ／ ${r['山域']||''}</div>
+            html += `<div class="record${isApp2 ? ' app2-record' : ''}">
+                <div class="record-title">[${i+1}] ${esc(r['年度']||'')} ${esc(r['開始日']||'')} ～ ${esc(r['終了日']||'')} ／ ${esc(r['山域']||'')}</div>
                 <div class="record-details">
-                    シーズン: ${r['シーズン']||''} ／ 行動: ${r['行動']||''}日 ／ 停滞: ${r['停滞']||'0'}日<br>
-                    ルート: ${r['ルート・特記事項']||''}<br>
-                    メンバー: ${r['メンバー']||''}
+                    <span class="record-tag">${esc(r['シーズン']||'')}</span>行動: ${esc(r['行動']||'')}日 ／ 停滞: ${esc(r['停滞']||'0')}日<br>
+                    ${esc(r['ルート・特記事項']||'')}<br>
+                    <span style="color:var(--text-light);">👥</span> ${esc(r['メンバー']||'')}
                 </div>
             </div>`;
         });
 
         if (records.length > 100) {
-            html += `<div class="msg-success">表示は上位100件です。CSVで全件確認できます。</div>`;
+            html += `<div class="msg msg-success mt-8">表示は上位100件です。CSVで全件確認できます。</div>`;
         }
-
-        document.getElementById(resId).innerHTML = html;
+        document.getElementById(appId + '-results').innerHTML = html;
     }
 
     // ===== CSVダウンロード =====
@@ -639,90 +826,89 @@
 
         const now = new Date();
         const ts = `${now.getFullYear()}${pad(now.getMonth()+1)}${pad(now.getDate())}`;
-        let filename;
-        if (type === 'personal') {
-            const name = document.getElementById('memberName').value.trim();
-            filename = `${name}_登山記録_${ts}.csv`;
-        } else {
-            filename = `条件抽出_${ts}.csv`;
-        }
+        const name = type === 'personal' ? document.getElementById('memberName').value.trim() : '';
+        const filename = name ? `${name}_登山記録_${ts}.csv` : `条件抽出_${ts}.csv`;
 
-        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.download = filename;
-        link.style.display = 'none';
+        const link = Object.assign(document.createElement('a'), {
+            href: URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' })),
+            download: filename,
+            style: 'display:none'
+        });
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
         showMsg(type === 'personal' ? 'app1-message' : 'app2-message',
-            `${filename} をダウンロードしました。`, 'success');
+            `${esc(filename)} をダウンロードしました。`, 'success');
     }
 
     function pad(n) { return String(n).padStart(2, '0'); }
 
     // ===== 分析 =====
     function runAnalysis(type, theme) {
-        const records = type === 'personal' ? personalRecords : conditionRecords;
+        const records  = type === 'personal' ? personalRecords : conditionRecords;
         const resultId = type === 'personal' ? 'app1-analysis-result' : 'app2-analysis-result';
-        if (!records.length) { return; }
+        const secId    = type === 'personal' ? 'app1-analysis-section' : 'app2-analysis-section';
+        if (!records.length) return;
+
+        document.getElementById(secId).querySelectorAll('.btn-analysis').forEach(b => {
+            b.classList.toggle('active', b.getAttribute('onclick').includes(`'${theme}'`));
+        });
 
         let html = '';
         switch(theme) {
-            case 'seasonal':  html = buildBarAnalysis('シーズン別登山回数', countField(records, 'シーズン'), 'teal'); break;
-            case 'area':      html = buildBarAnalysis('山域別登山回数（上位15）', countField(records, '山域', 15), 'orange'); break;
-            case 'timeline':  html = buildBarAnalysis('年代別活動回数', countField(records, '暦年').sort((a,b)=>a[0].localeCompare(b[0])), 'green', true); break;
-            case 'member':    html = buildMemberAnalysis(records, type); break;
-            case 'stagnation':html = buildStagnationAnalysis(records); break;
-            case 'route':     html = buildRouteAnalysis(records); break;
-            case 'activity':  html = buildActivityAnalysis(records); break;
-            default: html = '<div class="analysis-result">準備中</div>';
+            case 'seasonal':   html = buildBarAnalysis('シーズン別登山回数', countField(records, 'シーズン'), 'teal'); break;
+            case 'area':       html = buildBarAnalysis('山域別登山回数（上位15）', countField(records, '山域', 15), 'orange'); break;
+            case 'timeline':   html = buildBarAnalysis('年代別活動回数', countField(records, '暦年').sort((a,b)=>a[0].localeCompare(b[0])), 'green'); break;
+            case 'member':     html = buildMemberAnalysis(records, type); break;
+            case 'stagnation': html = buildStagnationAnalysis(records); break;
+            case 'route':      html = buildRouteAnalysis(records); break;
+            case 'activity':   html = buildActivityAnalysis(records); break;
+            default: html = '<div class="analysis-card">準備中</div>';
         }
         document.getElementById(resultId).innerHTML = html;
     }
 
-    function countField(records, field, limit, presorted) {
-        const cnt = {};
-        records.forEach(r => { const v = r[field]||'不明'; cnt[v] = (cnt[v]||0)+1; });
-        let arr = Object.entries(cnt).sort((a,b) => b[1]-a[1]);
-        if (limit) arr = arr.slice(0, limit);
-        return arr;
+    function clearAnalysisActive(type) {
+        const secId = type === 'personal' ? 'app1-analysis-section' : 'app2-analysis-section';
+        document.getElementById(secId).querySelectorAll('.btn-analysis')
+            .forEach(b => b.classList.remove('active'));
     }
 
-    function buildBarAnalysis(title, entries, colorClass, sorted) {
-        if (!entries.length) return '<div class="analysis-result">データなし</div>';
+    function countField(records, field, limit) {
+        const cnt = {};
+        records.forEach(r => { const v = r[field] || '不明'; cnt[v] = (cnt[v] || 0) + 1; });
+        let arr = Object.entries(cnt).sort((a, b) => b[1] - a[1]);
+        return limit ? arr.slice(0, limit) : arr;
+    }
+
+    function buildBarAnalysis(title, entries, colorClass) {
+        if (!entries.length) return `<div class="analysis-card"><h4>${esc(title)}</h4>データなし</div>`;
         const max = Math.max(...entries.map(e => e[1]));
-        let rows = entries.map(([label, cnt]) => {
-            const pct = Math.round(cnt/max*100);
-            return `<div class="bar-row">
+        const rows = entries.map(([label, cnt]) =>
+            `<div class="bar-row">
                 <span class="bar-label" title="${esc(label)}">${esc(label)}</span>
-                <div class="bar-track"><div class="bar-fill ${colorClass}" style="width:${pct}%"></div></div>
+                <div class="bar-track"><div class="bar-fill ${colorClass}" style="width:${Math.round(cnt/max*100)}%"></div></div>
                 <span class="bar-count">${cnt}</span>
-            </div>`;
-        }).join('');
-        return `<div class="analysis-card" style="max-width:100%;">
-            <h4>${title}</h4>
-            <div class="bar-chart">${rows}</div>
-        </div>`;
+            </div>`).join('');
+        return `<div class="analysis-card"><h4>${esc(title)}</h4><div class="bar-chart">${rows}</div></div>`;
     }
 
     function buildMemberAnalysis(records, type) {
-        const isMemberName = type === 'personal';
-        const selfNames = isMemberName ? [
+        const selfNames = type === 'personal' ? [
             document.getElementById('memberName').value.trim(),
             document.getElementById('memberName2').value.trim(),
             document.getElementById('memberName3').value.trim(),
         ].filter(Boolean) : [];
         const cnt = {};
         records.forEach(r => {
-            (r['メンバー']||'').split(/\s+/).filter(Boolean).forEach(m => {
+            (r['メンバー'] || '').split(/\s+/).filter(Boolean).forEach(m => {
                 const n = normalizeName(m);
-                if (!n || n === '不詳' || (isMemberName && selfNames.some(sn => n.includes(sn)))) return;
-                cnt[n] = (cnt[n]||0)+1;
+                if (!n || n === '不詳' || (selfNames.length && selfNames.some(sn => n.includes(sn)))) return;
+                cnt[n] = (cnt[n] || 0) + 1;
             });
         });
-        const entries = Object.entries(cnt).sort((a,b)=>b[1]-a[1]).slice(0,15);
-        if (!entries.length) return '<div class="analysis-result">メンバーデータなし</div>';
+        const entries = Object.entries(cnt).sort((a, b) => b[1] - a[1]).slice(0, 15);
+        if (!entries.length) return '<div class="analysis-card"><h4>同行者</h4>メンバーデータなし</div>';
         const max = entries[0][1];
         const rows = entries.map(([name, c]) =>
             `<div class="bar-row">
@@ -730,35 +916,39 @@
                 <div class="bar-track"><div class="bar-fill green" style="width:${Math.round(c/max*100)}%"></div></div>
                 <span class="bar-count">${c}</span>
             </div>`).join('');
-        const primaryName = selfNames[0] || '';
-        const title = isMemberName ? `${primaryName}との同行者（上位15名）` : '参加メンバー頻度（上位15名）';
-        return `<div class="analysis-card" style="max-width:100%;"><h4>${title}</h4><div class="bar-chart">${rows}</div></div>`;
+        const title = selfNames.length
+            ? `${esc(selfNames[0])}との同行者（上位15名）`
+            : '参加メンバー頻度（上位15名）';
+        return `<div class="analysis-card"><h4>${title}</h4><div class="bar-chart">${rows}</div></div>`;
     }
 
     function buildStagnationAnalysis(records) {
         let withStay = 0, withoutStay = 0, totalStayDays = 0;
         records.forEach(r => {
-            const v = parseInt(r['停滞']||'0');
-            if (v >= 1) { withStay++; totalStayDays += v; }
-            else withoutStay++;
+            const v = parseInt(r['停滞'] || '0') || 0;
+            if (v >= 1) { withStay++; totalStayDays += v; } else withoutStay++;
         });
-        const total = records.length;
-        const rate = total > 0 ? (withStay/total*100).toFixed(1) : 0;
-        const avgDays = withStay > 0 ? (totalStayDays/withStay).toFixed(1) : 0;
-        return `<div class="analysis-card" style="max-width:100%;">
+        const total   = records.length;
+        const rate    = total > 0 ? (withStay / total * 100).toFixed(1) : 0;
+        const avgDays = withStay > 0 ? (totalStayDays / withStay).toFixed(1) : 0;
+        return `<div class="analysis-card">
             <h4>停滞分析</h4>
             <div class="bar-chart">
-                <div class="bar-row"><span class="bar-label">停滞あり</span>
+                <div class="bar-row">
+                    <span class="bar-label">停滞あり</span>
                     <div class="bar-track"><div class="bar-fill orange" style="width:${rate}%"></div></div>
-                    <span class="bar-count">${withStay}</span></div>
-                <div class="bar-row"><span class="bar-label">停滞なし</span>
-                    <div class="bar-track"><div class="bar-fill green" style="width:${(100-rate)}%"></div></div>
-                    <span class="bar-count">${withoutStay}</span></div>
+                    <span class="bar-count">${withStay}</span>
+                </div>
+                <div class="bar-row">
+                    <span class="bar-label">停滞なし</span>
+                    <div class="bar-track"><div class="bar-fill teal" style="width:${100 - rate}%"></div></div>
+                    <span class="bar-count">${withoutStay}</span>
+                </div>
             </div>
-            <div style="margin-top:10px;font-size:13px;color:#555;">
-                停滞率: <strong>${rate}%</strong> ／
-                停滞記録の平均停滞日数: <strong>${avgDays}日</strong> ／
-                累計停滞日数: <strong>${totalStayDays}日</strong>
+            <div class="stat-row">
+                <div class="stat-item">停滞率 <strong>${rate}%</strong></div>
+                <div class="stat-item">停滞記録の平均停滞日数 <strong>${avgDays}日</strong></div>
+                <div class="stat-item">累計停滞日数 <strong>${totalStayDays}日</strong></div>
             </div>
         </div>`;
     }
@@ -768,50 +958,54 @@
         const cnt = {};
         keywords.forEach(k => cnt[k] = 0);
         records.forEach(r => {
-            const text = r['ルート・特記事項']||'';
+            const text = r['ルート・特記事項'] || '';
             keywords.forEach(k => { if (text.includes(k)) cnt[k]++; });
         });
-        const entries = Object.entries(cnt).sort((a,b)=>b[1]-a[1]).filter(e=>e[1]>0);
-        if (!entries.length) return '<div class="analysis-result">キーワードが見つかりませんでした</div>';
+        const entries = Object.entries(cnt).sort((a, b) => b[1] - a[1]).filter(e => e[1] > 0);
+        if (!entries.length) return '<div class="analysis-card"><h4>ルート・活動キーワード</h4>キーワードが見つかりませんでした</div>';
         const max = entries[0][1];
         const rows = entries.map(([kw, c]) =>
-            `<div class="bar-row"><span class="bar-label">${esc(kw)}</span>
+            `<div class="bar-row">
+                <span class="bar-label">${esc(kw)}</span>
                 <div class="bar-track"><div class="bar-fill teal" style="width:${Math.round(c/max*100)}%"></div></div>
-                <span class="bar-count">${c}</span></div>`).join('');
-        return `<div class="analysis-card" style="max-width:100%;"><h4>ルート・活動キーワード出現回数</h4><div class="bar-chart">${rows}</div></div>`;
+                <span class="bar-count">${c}</span>
+            </div>`).join('');
+        return `<div class="analysis-card"><h4>ルート・活動キーワード出現回数</h4><div class="bar-chart">${rows}</div></div>`;
     }
 
     function buildActivityAnalysis(records) {
-        const actDays = records.map(r => parseInt(r['行動']||'0')).filter(v=>v>0);
-        if (!actDays.length) return '<div class="analysis-result">行動日数データなし</div>';
-        const total = actDays.reduce((a,b)=>a+b,0);
-        const avg = (total/actDays.length).toFixed(1);
-        const max = Math.max(...actDays);
-        const dist = {};
+        const actDays = records.map(r => parseInt(r['行動'] || '0') || 0).filter(v => v > 0);
+        if (!actDays.length) return '<div class="analysis-card"><h4>行動日数分析</h4>行動日数データなし</div>';
+        const total = actDays.reduce((a, b) => a + b, 0);
+        const avg   = (total / actDays.length).toFixed(1);
+        const max   = Math.max(...actDays);
+        const dist  = {};
         actDays.forEach(d => {
             const key = d === 1 ? '日帰り(1日)' : d <= 3 ? '2〜3日' : d <= 7 ? '4〜7日' : '8日以上';
-            dist[key] = (dist[key]||0)+1;
+            dist[key] = (dist[key] || 0) + 1;
         });
-        const order = ['日帰り(1日)','2〜3日','4〜7日','8日以上'];
+        const order  = ['日帰り(1日)', '2〜3日', '4〜7日', '8日以上'];
         const maxCnt = Math.max(...Object.values(dist));
-        const rows = order.filter(k=>dist[k]).map(k =>
-            `<div class="bar-row"><span class="bar-label">${k}</span>
+        const rows = order.filter(k => dist[k]).map(k =>
+            `<div class="bar-row">
+                <span class="bar-label">${k}</span>
                 <div class="bar-track"><div class="bar-fill orange" style="width:${Math.round(dist[k]/maxCnt*100)}%"></div></div>
-                <span class="bar-count">${dist[k]}</span></div>`).join('');
-        return `<div class="analysis-card" style="max-width:100%;">
+                <span class="bar-count">${dist[k]}</span>
+            </div>`).join('');
+        return `<div class="analysis-card">
             <h4>行動日数分析</h4>
             <div class="bar-chart">${rows}</div>
-            <div style="margin-top:10px;font-size:13px;color:#555;">
-                平均行動日数: <strong>${avg}日</strong> ／
-                最長: <strong>${max}日</strong> ／
-                総行動日数: <strong>${total}日</strong>
+            <div class="stat-row">
+                <div class="stat-item">平均行動日数 <strong>${avg}日</strong></div>
+                <div class="stat-item">最長 <strong>${max}日</strong></div>
+                <div class="stat-item">総行動日数 <strong>${total}日</strong></div>
             </div>
         </div>`;
     }
 
     // ===== ユーティリティ =====
     function showMsg(id, msg, type) {
-        document.getElementById(id).innerHTML = `<div class="msg-${type}">${msg}</div>`;
+        document.getElementById(id).innerHTML = `<div class="msg msg-${type}">${msg}</div>`;
     }
 
     function esc(s) {

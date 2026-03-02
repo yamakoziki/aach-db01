@@ -3,12 +3,18 @@
 AACH登山データ抽出ツール
 
 使い方:
-  # 個人抽出
-  python mountain_extractor.py personal DATA.csv "田中太郎" [-o out.csv] [--analyze]
+  # 個人抽出（OR検索: 表記ゆれ対応）
+  python mountain_extractor.py personal DATA.csv "澤柿" "沢柿" [-o out.csv] [--analyze]
+
+  # 個人抽出（AND検索: 複数人が同行した山行を検索）
+  python mountain_extractor.py personal DATA.csv "澤柿" "石橋" --name-logic and
 
   # 山域・シーズン・ルート条件抽出
   python mountain_extractor.py condition DATA.csv [-a 山域1 山域2] [-s シーズン1] \
-      [-r キーワード1 キーワード2] [-o out.csv] [--analyze]  # AND検索
+      [-r キーワード1 キーワード2] [-o out.csv] [--analyze]  # AND検索（デフォルト）
+
+  # ルートキーワードOR検索
+  python mountain_extractor.py condition DATA.csv -r 縦走 スキー --route-logic or
 
   # 一覧確認（山域・シーズンの選択肢を表示）
   python mountain_extractor.py list DATA.csv
@@ -86,14 +92,22 @@ def print_records(records: List[Dict]):
 
 # ===== 抽出ロジック =====
 
-def extract_personal(records: List[Dict], member_names: List[str]) -> List[Dict]:
-    """メンバー名で登山記録を抽出（部分一致・OR検索）"""
+def extract_personal(records: List[Dict], member_names: List[str], name_logic: str = 'or') -> List[Dict]:
+    """メンバー名で登山記録を抽出（部分一致）
+
+    name_logic='or' : いずれかの名前がメンバーに含まれる（表記ゆれ対応・デフォルト）
+    name_logic='and': すべての名前がメンバーに含まれる（同行者検索）
+    """
     result = []
     for r in records:
         members = (r.get('メンバー', '') or '').split()
         normalized = [normalize_name(m) for m in members]
-        if any(name in norm for name in member_names for norm in normalized):
-            result.append(r)
+        if name_logic == 'and':
+            if all(any(name in norm for norm in normalized) for name in member_names):
+                result.append(r)
+        else:
+            if any(name in norm for name in member_names for norm in normalized):
+                result.append(r)
     return result
 
 
@@ -256,10 +270,11 @@ def _int(v) -> int:
 
 def cmd_personal(args):
     records = load_csv(args.csv_file)
-    result = extract_personal(records, args.member_name)
+    result = extract_personal(records, args.member_name, args.name_logic)
 
     if not result:
-        names_str = '・'.join(args.member_name)
+        sep = ' AND ' if args.name_logic == 'and' else '・'
+        names_str = sep.join(args.member_name)
         print(f"「{names_str}」の記録が見つかりませんでした。")
         return
 
@@ -327,7 +342,9 @@ def main():
     # --- personal ---
     p1 = sub.add_parser('personal', help='メンバー名で抽出（個人抽出）')
     p1.add_argument('csv_file', help='登山データCSVファイル')
-    p1.add_argument('member_name', nargs='+', help='メンバー名（部分一致）。複数指定でOR検索（例: "澤柿" "沢柿"）')
+    p1.add_argument('member_name', nargs='+', help='メンバー名（部分一致）。複数指定時は --name-logic で AND/OR を選択')
+    p1.add_argument('--name-logic', choices=['and', 'or'], default='or',
+                    help='メンバー名の検索論理: or=いずれかを含む（デフォルト・表記ゆれ対応）/ and=すべてを含む（同行者検索）')
     p1.add_argument('-o', '--output', help='出力CSVファイルパス')
     p1.add_argument('--analyze', action='store_true', help='分析結果を表示')
     p1.set_defaults(func=cmd_personal)
