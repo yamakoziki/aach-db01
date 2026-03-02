@@ -582,14 +582,24 @@
 </footer>
 
 <script>
-    function downloadApp() {
-        const src = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
-        const blob = new Blob([src], { type: 'text/html;charset=utf-8' });
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = 'AACH登山データ抽出アプリ.html';
+    async function downloadApp() {
+        let src;
+        try {
+            const res = await fetch(location.href);
+            if (!res.ok) throw new Error('fetch failed');
+            src = await res.text();
+        } catch (e) {
+            src = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+        }
+        const a = Object.assign(document.createElement('a'), {
+            href: URL.createObjectURL(new Blob([src], { type: 'text/html;charset=utf-8' })),
+            download: 'AACH登山データ抽出アプリ.html',
+            style: 'display:none'
+        });
+        document.body.appendChild(a);
         a.click();
-        URL.revokeObjectURL(a.href);
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(a.href), 1000);
     }
 
     let allRecords = [];

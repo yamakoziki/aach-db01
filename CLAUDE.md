@@ -8,7 +8,7 @@ AACH登山データ抽出ツール — a Japanese mountain climbing record extra
 - `mountain_extractor.py`: CLI tool for filtering and analyzing the CSV database
 - `mountain_extractor.html`: Standalone browser-based version (no server needed; reads CSV via FileReader API)
 
-The CSV data file is `AACH山行DB～2016年V1.2 - 山行一覧.csv`.
+The CSV data file is `AACH山行DB～2016年V1.2 - 山行一覧.csv`. In the examples below, `DATA.csv` stands for this filename.
 
 No external dependencies — `mountain_extractor.py` uses only Python stdlib (`csv`, `argparse`, `re`, `collections`, `datetime`, `typing`).
 

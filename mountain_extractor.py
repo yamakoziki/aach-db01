@@ -139,7 +139,7 @@ def extract_condition(
 
 # ===== 分析 =====
 
-def analyze(records: List[Dict], theme: str, member_name: str = ''):
+def analyze(records: List[Dict], theme: str, member_names: List[str] = None):
     """指定テーマで分析結果を出力"""
     if not records:
         print("分析対象のデータがありません。")
@@ -161,9 +161,9 @@ def analyze(records: List[Dict], theme: str, member_name: str = ''):
         for r in records:
             for m in (r.get('メンバー','') or '').split():
                 n = normalize_name(m)
-                if n and n != '不詳' and (not member_name or member_name not in n):
+                if n and n != '不詳' and not any(name in n for name in (member_names or [])):
                     cnt[n] += 1
-        title = f"{member_name}との同行者（上位15名）" if member_name else "参加メンバー頻度（上位15名）"
+        title = f"{'・'.join(member_names)}との同行者（上位15名）" if member_names else "参加メンバー頻度（上位15名）"
         _analyze_bar(title, cnt, top=15)
 
     elif theme == 'stagnation':
@@ -284,9 +284,8 @@ def cmd_personal(args):
         print_records(result)
 
     if args.analyze:
-        primary = args.member_name[0]
         for theme in ['seasonal', 'area', 'timeline', 'member', 'stagnation', 'route']:
-            analyze(result, theme, member_name=primary)
+            analyze(result, theme, member_names=args.member_name)
 
 
 def cmd_condition(args):
