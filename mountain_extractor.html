@@ -53,6 +53,20 @@
         }
         header h1 { font-size: 22px; font-weight: bold; letter-spacing: 0.06em; }
         header p  { font-size: 12px; opacity: 0.7; margin-top: 5px; letter-spacing: 0.08em; }
+        .header-dl {
+            display: inline-block;
+            margin-top: 12px;
+            padding: 5px 14px;
+            font-size: 12px;
+            font-weight: bold;
+            color: white;
+            border: 1.5px solid rgba(255,255,255,0.6);
+            border-radius: 20px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background 0.18s;
+        }
+        .header-dl:hover { background: rgba(255,255,255,0.15); }
 
         /* ---- Main ---- */
         main {
@@ -403,6 +417,7 @@
 <header>
     <h1>⛰ AACH 登山データ抽出アプリ</h1>
     <p>AACH 山行記録データベース 検索・分析ツール</p>
+    <a class="header-dl" onclick="downloadApp()">⬇ アプリをダウンロード</a>
 </header>
 
 <main>
@@ -567,6 +582,16 @@
 </footer>
 
 <script>
+    function downloadApp() {
+        const src = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+        const blob = new Blob([src], { type: 'text/html;charset=utf-8' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'AACH登山データ抽出アプリ.html';
+        a.click();
+        URL.revokeObjectURL(a.href);
+    }
+
     let allRecords = [];
     let personalRecords = [];
     let conditionRecords = [];

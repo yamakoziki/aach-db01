@@ -10,6 +10,10 @@ AACH登山データ抽出ツール — a Japanese mountain climbing record extra
 
 The CSV data file is `AACH山行DB～2016年V1.2 - 山行一覧.csv`.
 
+No external dependencies — `mountain_extractor.py` uses only Python stdlib (`csv`, `argparse`, `re`, `collections`, `datetime`, `typing`).
+
+> **Note**: `README.md` is outdated — it documents a pre-subcommand interface and should not be relied on.
+
 ## Common Commands
 
 ```bash
