@@ -101,6 +101,7 @@ def extract_condition(
     areas: Optional[List[str]] = None,
     seasons: Optional[List[str]] = None,
     route_keywords: Optional[List[str]] = None,
+    route_logic: str = 'and',
 ) -> List[Dict]:
     """山域・シーズン・ルートキーワードで登山記録を抽出"""
     result = []
@@ -111,8 +112,12 @@ def extract_condition(
             continue
         if route_keywords:
             text = (r.get('ルート・特記事項', '') or '') + ' ' + (r.get('山域', '') or '')
-            if not all(kw in text for kw in route_keywords):
-                continue
+            if route_logic == 'or':
+                if not any(kw in text for kw in route_keywords):
+                    continue
+            else:
+                if not all(kw in text for kw in route_keywords):
+                    continue
         result.append(r)
     return result
 
@@ -277,7 +282,7 @@ def cmd_condition(args):
         print("エラー: 山域(-a)・シーズン(-s)・ルートキーワード(-r)のいずれかを指定してください。", file=sys.stderr)
         sys.exit(1)
 
-    result = extract_condition(records, areas or None, seasons or None, route_kws or None)
+    result = extract_condition(records, areas or None, seasons or None, route_kws or None, args.route_logic)
 
     if not result:
         print("指定条件に該当するレコードが見つかりませんでした。")
@@ -329,7 +334,9 @@ def main():
     p2.add_argument('csv_file', help='登山データCSVファイル')
     p2.add_argument('-a', '--area', nargs='+', metavar='山域', help='山域（複数指定可）')
     p2.add_argument('-s', '--season', nargs='+', metavar='シーズン', help='シーズン（複数指定可）')
-    p2.add_argument('-r', '--route', nargs='+', metavar='キーワード', help='ルートキーワード（最大5つ推奨・AND検索）')
+    p2.add_argument('-r', '--route', nargs='+', metavar='キーワード', help='ルートキーワード（最大5つ推奨）')
+    p2.add_argument('--route-logic', choices=['and', 'or'], default='and',
+                    help='ルートキーワードの検索論理: and=すべてを含む（デフォルト）/ or=いずれかを含む')
     p2.add_argument('-o', '--output', help='出力CSVファイルパス')
     p2.add_argument('--analyze', action='store_true', help='分析結果を表示')
     p2.set_defaults(func=cmd_condition)

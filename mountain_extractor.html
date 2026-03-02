@@ -323,8 +323,16 @@
             </div>
 
             <div class="form-group">
-                <label>ルートキーワード（山名・尾根名・沢名など、最大5つ・AND検索）</label>
-                <div class="help-text">入力したキーワードのすべてを含むルートを抽出（AND検索・空欄は無視）</div>
+                <label>ルートキーワード（山名・尾根名・沢名など、最大5つ）</label>
+                <div class="help-text">空欄は無視。AND: すべてを含む ／ OR: いずれかを含む</div>
+                <div style="margin-bottom:8px;">
+                    <label style="display:inline; font-weight:normal; margin-right:20px; cursor:pointer;">
+                        <input type="radio" name="routeLogic" value="and" checked> AND検索（すべてを含む）
+                    </label>
+                    <label style="display:inline; font-weight:normal; cursor:pointer;">
+                        <input type="radio" name="routeLogic" value="or"> OR検索（いずれかを含む）
+                    </label>
+                </div>
                 <div class="route-grid">
                     <input type="text" id="route1" placeholder="キーワード①" />
                     <input type="text" id="route2" placeholder="キーワード②" />
@@ -481,6 +489,7 @@
     function resetApp2Filters() {
         selectDefaultArea();
         selectDefaultSeason();
+        document.querySelector('input[name="routeLogic"][value="and"]').checked = true;
         ['route1','route2','route3','route4','route5'].forEach(id => {
             document.getElementById(id).value = '';
         });
@@ -516,6 +525,7 @@
         const selSeason = document.getElementById('seasonSelect').value;
         const routeKws = ['route1','route2','route3','route4','route5']
             .map(id => document.getElementById(id).value.trim()).filter(Boolean);
+        const routeLogic = document.querySelector('input[name="routeLogic"]:checked').value;
 
         const hasAreaFilter = selArea && selArea !== '全山域';
         const hasSeasonFilter = selSeason && selSeason !== '全期間';
@@ -531,14 +541,17 @@
             if (hasSeasonFilter && selSeason !== (r['シーズン'] || '')) return false;
             if (hasRouteFilter) {
                 const route = (r['ルート・特記事項'] || '') + ' ' + (r['山域'] || '');
-                if (!routeKws.every(kw => route.includes(kw))) return false;
+                const match = routeLogic === 'and'
+                    ? routeKws.every(kw => route.includes(kw))
+                    : routeKws.some(kw => route.includes(kw));
+                if (!match) return false;
             }
             return true;
         });
 
         const labelAreas = hasAreaFilter ? [selArea] : [];
         const labelSeasons = hasSeasonFilter ? [selSeason] : [];
-        displayResults(conditionRecords, 'app2', buildConditionLabel(labelAreas, labelSeasons, routeKws));
+        displayResults(conditionRecords, 'app2', buildConditionLabel(labelAreas, labelSeasons, routeKws, routeLogic));
         document.getElementById('app2-download-btn').disabled = conditionRecords.length === 0;
         if (conditionRecords.length > 0) {
             document.getElementById('app2-analysis-section').classList.remove('hidden');
@@ -550,11 +563,14 @@
         return Array.from(sel.selectedOptions).map(o => o.value);
     }
 
-    function buildConditionLabel(areas, seasons, routes) {
+    function buildConditionLabel(areas, seasons, routes, routeLogic) {
         const parts = [];
         if (areas.length) parts.push('山域:' + areas.slice(0,3).join('・') + (areas.length>3?'…':''));
         if (seasons.length) parts.push('シーズン:' + seasons.join('・'));
-        if (routes.length) parts.push('ルート:' + routes.join('・'));
+        if (routes.length) {
+            const logicLabel = routeLogic === 'or' ? '[OR]' : '[AND]';
+            parts.push('ルート' + logicLabel + ':' + routes.join('・'));
+        }
         return parts.join(' / ');
     }
 
