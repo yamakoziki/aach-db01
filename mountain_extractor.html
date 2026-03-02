@@ -3,10 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
     <title>AACH登山データ抽出アプリ</title>
+    <script>
+        // キャッシュバスター: 新しいセッションで必ず最新版を取得（CDN・ブラウザキャッシュをバイパス）
+        (function () {
+            try {
+                if (!sessionStorage.getItem('_init')) {
+                    sessionStorage.setItem('_init', '1');
+                    var u = new URL(location.href);
+                    u.searchParams.set('_v', Date.now());
+                    location.replace(u.href);
+                } else {
+                    // リダイレクト後にURLをきれいに戻す
+                    var u = new URL(location.href);
+                    if (u.searchParams.has('_v')) {
+                        u.searchParams.delete('_v');
+                        history.replaceState(null, '', u.pathname + (u.search || ''));
+                    }
+                }
+            } catch (e) {}
+        })();
+    </script>
     <style>
         :root {
             --bg:           #edf0f4;

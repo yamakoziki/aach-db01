@@ -49,9 +49,10 @@ Key functions:
 - `load_csv()`: Tries multiple encodings (`utf-8-sig`, `utf-8`, `shift_jis`, `cp932`) to handle Excel-exported CSVs
 - `save_csv()`: Writes BOM-attached UTF-8 (`utf-8-sig`) for Excel compatibility, outputting only `OUTPUT_COLUMNS`
 - `extract_personal()`: Splits `メンバー` field on whitespace, normalizes each token with `normalize_name()`, then partial-matches against one or more names. `name_logic='or'` (default): any name matches; `name_logic='and'`: every name must match at least one member (for finding shared climbs)
-- `extract_condition()`: Filters by 山域 (exact match within supplied list), シーズン (exact), and route keywords (AND or OR match, selectable via `route_logic` param, against concatenated `ルート・特記事項 + 山域` text)
+- `extract_condition()`: Filters by 山域 (exact match within supplied list), シーズン (exact), and route keywords (AND or OR match, selectable via `route_logic` param, against concatenated `ルート・特記事項 + 山域` text). The `condition` subcommand requires at least one of `-a`/`-s`/`-r` or it exits with an error.
 - `normalize_name()`: Strips role prefixes like `L:` and parenthetical suffixes like `（CL）` from member tokens
-- `analyze()`: Dispatches to `_analyze_*` helpers for bar-chart stats. `personal` runs themes `[seasonal, area, timeline, member, stagnation, route]`; `condition` runs `[area, seasonal, timeline, member, stagnation, activity]`.
+- `analyze()`: Dispatches to `_analyze_*` helpers for bar-chart stats. `personal` runs themes `[seasonal, area, timeline, member, stagnation, route]`; `condition` runs `[area, seasonal, timeline, member, stagnation, activity]`. The `-o` and `--analyze` flags are independent: `-o` saves to file instead of printing records, but `--analyze` still prints analysis to stdout regardless.
+- `_analyze_route()`: Uses a hardcoded keyword list `['スキー', '初登山', '初登頂', '合宿', '講習会', '縦走', '沢登り', '岩登り', 'ピーク', '尾根']` — same list is mirrored in `mountain_extractor.html`; keep in sync if modified.
 
 ### Member field format
 
